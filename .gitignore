@@ -1,1 +1,105 @@
+# =========================
+# Virtual Environments
+# =========================
 venv/
+env/
+ENV/
+.venv/
+.env/
+venv.bak/
+
+# =========================
+# Python Cache
+# =========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.pdb
+*.so
+
+# =========================
+# Package / Build
+# =========================
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# =========================
+# Environment Variables
+# =========================
+.env
+.env.*
+*.env
+secrets.py
+
+# =========================
+# Flask Instance Folder
+# (contains DB, chromadb, secrets)
+# =========================
+instance/
+
+# =========================
+# Databases
+# =========================
+*.sqlite3
+*.db
+
+# =========================
+# ChromaDB / Vector Store
+# =========================
+chromadb/
+*.bin
+chroma.sqlite3
+
+# =========================
+# AI / ML Models & Data
+# =========================
+*.pt
+*.pth
+*.onnx
+*.safetensors
+*.pkl
+*.pickle
+*.h5
+models/
+checkpoints/
+embeddings/
+
+# =========================
+# Logs & Temp
+# =========================
+*.log
+*.tmp
+*.bak
+logs/
+tmp/
+temp/
+
+# =========================
+# OS & Editor
+# =========================
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# =========================
+# Testing
+# =========================
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# =========================
+# Docker
+# =========================
+*.env.docker
+docker-compose.override.yml
