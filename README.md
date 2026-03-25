@@ -1,6 +1,6 @@
 # Protofolio Backend
 
-Agentic RAG portfolio generator — Flask API with multi-agent LLM Council and Mem0 memory.
+Agentic portfolio generator — Flask API with multi-agent LLM Council and Mem0 memory.
 
 ## Stack
 - Python / Flask
