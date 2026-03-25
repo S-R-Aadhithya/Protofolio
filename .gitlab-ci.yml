@@ -1,0 +1,59 @@
+image: python:3.11-slim
+
+stages:
+  - build
+  - test
+  - deploy
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+cache:
+  key:
+    files:
+      - requirements.txt
+  paths:
+    - .cache/pip/
+
+install-deps:
+  stage: build
+  script:
+    - pip install --upgrade pip
+    - pip install -r requirements.txt
+
+lint:
+  stage: test
+  script:
+    - pip install flake8
+    - flake8 app/ --max-line-length=120
+
+unit-tests:
+  stage: test
+  script:
+    - pip install -r requirements.txt pytest pytest-cov
+    - pytest tests/unit/ -v --tb=short --cov=app --cov-report=term-missing
+  coverage: '/TOTAL.*\s+(\d+%)$/'
+
+integration-tests:
+  stage: test
+  script:
+    - pip install -r requirements.txt pytest
+    - pytest tests/integration/ -v --tb=short
+  allow_failure: true
+
+deploy-staging:
+  stage: deploy
+  script:
+    - apt-get update -qq && apt-get install -y curl
+    - curl -X POST "$RENDER_STAGING_DEPLOY_HOOK"
+  only:
+    - develop
+
+deploy-production:
+  stage: deploy
+  script:
+    - apt-get update -qq && apt-get install -y curl
+    - curl -X POST "$RENDER_PROD_DEPLOY_HOOK"
+  only:
+    - main
+  when: manual
