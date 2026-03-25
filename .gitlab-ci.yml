@@ -118,3 +118,4 @@ deploy-production:
   only:
     - main
   when: manual
+  when: manual
