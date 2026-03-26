@@ -19,3 +19,4 @@ langchain-openai==1.1.10
 mlflow
 langchain-google-genai==4.2.1
 google-generativeai==0.8.6
+chromadb
