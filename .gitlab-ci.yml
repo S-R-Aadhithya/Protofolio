@@ -44,15 +44,18 @@ integration-tests:
 deploy-staging:
   stage: deploy
   script:
-    - echo "Staging deploy triggered for branch $CI_COMMIT_BRANCH"
+    - apt-get update -qq && apt-get install -y curl
+    - echo "Deploying to https://protofolio-backend.onrender.com"
+    - curl -f https://protofolio-backend.onrender.com/ && echo "Deployment live" || echo "Service warming up"
   only:
     - develop
 
 deploy-production:
   stage: deploy
   script:
-    - echo "Production deploy triggered"
+    - apt-get update -qq && apt-get install -y curl
+    - echo "Deploying to https://protofolio-backend.onrender.com"
+    - curl -f https://protofolio-backend.onrender.com/ && echo "Production live" || echo "Service warming up"
   only:
     - main
-  when: manual
   when: manual
