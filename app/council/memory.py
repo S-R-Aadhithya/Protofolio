@@ -32,7 +32,7 @@ def get_memory_client():
             }
         },
         "llm": {
-            "provider": "google",
+            "provider": "gemini",
             "config": {
                 "model": "gemini-1.5-flash",
                 "temperature": 0.2,
