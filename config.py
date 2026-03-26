@@ -4,6 +4,9 @@ class Config:
     SECRET_KEY = os.getenv('SECRET_KEY', 'my_precious_secret_key')
     DEBUG = False
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    
+    MLFLOW_TRACKING_URI = os.getenv('MLFLOW_TRACKING_URI', 'file:./mlruns')
+    MLFLOW_EXPERIMENT_NAME = os.getenv('MLFLOW_EXPERIMENT_NAME', 'Protofolio_Generation')
     JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'my_precious_jwt_secret_key')
     from datetime import timedelta
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=int(os.getenv('JWT_EXPIRATION_HOURS', 24)))
@@ -33,6 +36,5 @@ class TestingConfig(Config):
 config_by_name = dict(
     dev=DevelopmentConfig,
     test=TestingConfig,
-    prod=ProductionConfig,
-    production=ProductionConfig
+    prod=ProductionConfig
 )
