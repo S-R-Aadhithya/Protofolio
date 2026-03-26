@@ -1,5 +1,17 @@
 from .agents import TechLead, Designer, ProductManager, Chairman
 from .memory import MemoryManager
+from ..generator.renderer import PortfolioRenderer
+from flask import current_app
+import time
+import mlflow
+import json
+import os
+import tempfile
+
+try:
+    from langchain.callbacks import get_openai_callback
+except ImportError:
+    from langchain_community.callbacks.manager import get_openai_callback
 
 class CouncilEngine:
     def __init__(self):
@@ -9,58 +21,129 @@ class CouncilEngine:
         self.chairman = Chairman()
         self.memory = MemoryManager()
 
+    def _calculate_quality_score(self, blueprint):
+        """Calculate a heuristic portfolio quality score based on completeness."""
+        score = 0
+        if isinstance(blueprint, dict) and "error" not in blueprint:
+            if blueprint.get("tagline"): score += 20
+            if blueprint.get("tech_stack"): score += 20
+            if getattr(blueprint, "get", lambda x: None)("layout_strategy"): score += 20
+            projects = blueprint.get("projects", [])
+            num_projects = len(projects) if isinstance(projects, list) else 0
+            score += min(40, num_projects * 20)
+        return score
+
+    @mlflow.trace(name="Council Deliberation Pipeline")
     def deliberate(self, user_id, user_input):
         print(f"DEBUG: Starting deliberation for user {user_id} with goal: {user_input}")
         
-        # Retrieve RAG Context from Mem0
-        print("DEBUG: Retrieving memory chunks...")
-        context = self.memory.retrieve_chunks(user_id, user_input)
-        print(f"DEBUG: Retrieved context: {len(context)} chars")
-        
-        # Stage 1: Opinions
-        print("DEBUG: Stage 1 - Fetching expert opinions...")
-        opinions = [
-            self.tech_lead.get_opinion(context, user_input),
-            self.designer.get_opinion(context, user_input),
-            self.pm.get_opinion(context, user_input)
-        ]
-        print(f"DEBUG: Stage 1 COMPLETE. Opinions received: {len(opinions)}")
-        
-        # Stage 2: Reviews
-        print("DEBUG: Stage 2 - Peer reviewing opinions...")
-        reviews = [
-            self.tech_lead.review(context, opinions),
-            self.designer.review(context, opinions),
-            self.pm.review(context, opinions)
-        ]
-        print(f"DEBUG: Stage 2 COMPLETE. Reviews received: {len(reviews)}")
-        
-        # Format deliberations for synthesis
-        deliberation_history = "--- INITIAL OPINIONS ---\n"
-        deliberation_history += f"Tech Lead Original: {opinions[0]}\n\n"
-        deliberation_history += f"Designer Original: {opinions[1]}\n\n"
-        deliberation_history += f"PM Original: {opinions[2]}\n\n"
-        
-        deliberation_history += "--- PEER REVIEWS & CRITIQUES ---\n"
-        deliberation_history += f"Tech Lead Review: {reviews[0]}\n\n"
-        deliberation_history += f"Designer Review: {reviews[1]}\n\n"
-        deliberation_history += f"PM Review: {reviews[2]}\n\n"
+        # Setup MLflow from app config if available
+        if current_app:
+            tracking_uri = current_app.config.get('MLFLOW_TRACKING_URI', 'file:./mlruns')
+            experiment_name = current_app.config.get('MLFLOW_EXPERIMENT_NAME', 'Protofolio_Generation')
+            mlflow.set_tracking_uri(tracking_uri)
+            mlflow.set_experiment(experiment_name)
+        else:
+            mlflow.set_tracking_uri('file:./mlruns')
+            mlflow.set_experiment('Protofolio_Generation')
             
-        # Stage 3: Synthesis
-        final_blueprint_str = self.chairman.synthesize(user_input, deliberation_history)
-        
-        # Try to parse JSON from synthesis
-        try:
-            # Simple extract JSON if it's wrapped in markers
-            import json
-            json_str = final_blueprint_str
-            if "```json" in json_str:
-                json_str = json_str.split("```json")[1].split("```")[0]
-            elif "```" in json_str:
-                json_str = json_str.split("```")[1].split("```")[0]
-            blueprint = json.loads(json_str)
-        except Exception:
-            blueprint = {"error": "Failed to parse synthesis", "raw": final_blueprint_str}
+        # Enable MLflow LLM Auto-Tracing for Langchain
+        mlflow.langchain.autolog()
+            
+        with mlflow.start_run(run_name=f"Deliberate_{user_id}"):
+            start_time = time.time()
+            
+            # Retrieve RAG Context from Mem0
+            print("DEBUG: Retrieving memory chunks...")
+            context = self.memory.retrieve_chunks(user_id, user_input)
+            print(f"DEBUG: Retrieved context: {len(context)} chars")
+            
+            # Log Parameters
+            mlflow.log_params({
+                "user_input_length": len(user_input),
+                "resume_complexity_chars": len(context),
+                "tech_lead_model": getattr(self.tech_lead.llm, 'model_name', 'default'),
+                "designer_model": getattr(self.designer.llm, 'model_name', 'default'),
+                "pm_model": getattr(self.pm.llm, 'model_name', 'default'),
+                "chairman_model": getattr(self.chairman.llm, 'model_name', 'default')
+            })
+
+            with get_openai_callback() as cb:
+                # Stage 1: Opinions
+                opinions = [
+                    self.tech_lead.get_opinion(context, user_input),
+                    self.designer.get_opinion(context, user_input),
+                    self.pm.get_opinion(context, user_input)
+                ]
+                
+                # Stage 2: Reviews
+                reviews = [
+                    self.tech_lead.review(context, opinions),
+                    self.designer.review(context, opinions),
+                    self.pm.review(context, opinions)
+                ]
+                
+                # Format deliberations for synthesis
+                deliberation_history = "--- INITIAL OPINIONS ---\n"
+                deliberation_history += f"Tech Lead Original: {opinions[0]}\n\n"
+                deliberation_history += f"Designer Original: {opinions[1]}\n\n"
+                deliberation_history += f"PM Original: {opinions[2]}\n\n"
+                
+                deliberation_history += "--- PEER REVIEWS & CRITIQUES ---\n"
+                deliberation_history += f"Tech Lead Review: {reviews[0]}\n\n"
+                deliberation_history += f"Designer Review: {reviews[1]}\n\n"
+                deliberation_history += f"PM Review: {reviews[2]}\n\n"
+                    
+                # Stage 3: Synthesis
+                final_blueprint_str = self.chairman.synthesize(user_input, deliberation_history)
+            
+            latency = time.time() - start_time
+
+            # Try to parse JSON from synthesis
+            try:
+                json_str = final_blueprint_str
+                if "```json" in json_str:
+                    json_str = json_str.split("```json")[1].split("```")[0]
+                elif "```" in json_str:
+                    json_str = json_str.split("```")[1].split("```")[0]
+                blueprint = json.loads(json_str)
+            except Exception:
+                blueprint = {"error": "Failed to parse synthesis", "raw": final_blueprint_str}
+
+            quality_score = self._calculate_quality_score(blueprint)
+            
+            # Generate HTML Portfolio Artifact
+            try:
+                renderer = PortfolioRenderer()
+                render_result = renderer.render(blueprint)
+                html_output = render_result.get("html", "")
+            except Exception as e:
+                html_output = f"<h1>Failed to render HTML</h1><p>{str(e)}</p>"
+
+            # Log Metrics
+            mlflow.log_metrics({
+                "latency_seconds": latency,
+                "total_tokens": cb.total_tokens,
+                "prompt_tokens": cb.prompt_tokens,
+                "completion_tokens": cb.completion_tokens,
+                "quality_score": quality_score
+            })
+            
+            # Log Artifacts
+            with tempfile.TemporaryDirectory() as tmpdir:
+                delib_path = os.path.join(tmpdir, "deliberation_log.txt")
+                with open(delib_path, "w", encoding="utf-8") as f:
+                    f.write(deliberation_history)
+                
+                blueprint_path = os.path.join(tmpdir, "blueprint.json")
+                with open(blueprint_path, "w", encoding="utf-8") as f:
+                    json.dump(blueprint, f, indent=2)
+                    
+                html_path = os.path.join(tmpdir, "portfolio.html")
+                with open(html_path, "w", encoding="utf-8") as f:
+                    f.write(html_output)
+                    
+                mlflow.log_artifacts(tmpdir)
 
         return {
             "deliberation": deliberation_history,
