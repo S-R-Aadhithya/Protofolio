@@ -17,6 +17,10 @@ def get_memory_client():
     # Note: If Mem0 natively only supports vector stores, we use its built-in SQLite integration
     # for local caching.
     
+    # Mem0 requires an API key for Google/Gemini
+    # We ensure we pick up the correct key from environment
+    api_key = os.getenv('GOOGLE_API_KEY') or os.getenv('GEMINI_API_KEY')
+    
     config = {
         "vector_store": {
             "provider": "chroma", 
@@ -28,7 +32,8 @@ def get_memory_client():
         "embedder": {
             "provider": "gemini",
             "config": {
-                "model": "models/text-embedding-004"
+                "model": "models/text-embedding-004",
+                "api_key": api_key
             }
         },
         "llm": {
@@ -36,14 +41,14 @@ def get_memory_client():
             "config": {
                 "model": "gemini-1.5-flash",
                 "temperature": 0.2,
+                "api_key": api_key
             }
         }
     }
     
-    # Mem0 requires an API key for Google/Gemini
-    # We ensure GOOGLE_API_KEY is set (using GEMINI_API_KEY as fallback)
-    if not os.getenv('GOOGLE_API_KEY'):
-        os.environ['GOOGLE_API_KEY'] = os.getenv('GEMINI_API_KEY', 'dummy-key-for-mem0')
+    # Fallback to dummy if none provided (for tests that might hit this but don't call real LLM)
+    if not api_key:
+        os.environ['GOOGLE_API_KEY'] = 'dummy-key-for-mem0'
         
     m = Memory.from_config(config)
     return m
