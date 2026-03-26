@@ -26,25 +26,24 @@ def get_memory_client():
             }
         },
         "embedder": {
-            "provider": "huggingface",
+            "provider": "gemini",
             "config": {
-                "model": "sentence-transformers/all-MiniLM-L6-v2"
+                "model": "models/text-embedding-004"
             }
         },
         "llm": {
-            "provider": "openai",
+            "provider": "google",
             "config": {
-                "model": "gpt-4o-mini",
+                "model": "gemini-1.5-flash",
                 "temperature": 0.2,
             }
         }
     }
     
-    # Mem0 strictly requires OPENAI_API_KEY to instantiate the openai client
-    # We provide a dummy key since we only rely on huggingface for embeddings 
-    # and Mem0 shouldn't invoke the LLM for basic add() operations.
-    if not os.getenv('OPENAI_API_KEY'):
-        os.environ['OPENAI_API_KEY'] = 'sk-dummy-key-for-mem0'
+    # Mem0 requires an API key for Google/Gemini
+    # We ensure GOOGLE_API_KEY is set (using GEMINI_API_KEY as fallback)
+    if not os.getenv('GOOGLE_API_KEY'):
+        os.environ['GOOGLE_API_KEY'] = os.getenv('GEMINI_API_KEY', 'dummy-key-for-mem0')
         
     m = Memory.from_config(config)
     return m
