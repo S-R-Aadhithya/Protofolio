@@ -26,16 +26,25 @@ install-deps:
 unit-tests:
   stage: test
   script:
-    - pip install -r requirements.txt pytest pytest-cov
+    - pip install -r requirements.txt pytest pytest-cov mlflow
     - pytest tests/unit/ -v --tb=short --cov=app --cov-report=term-missing
   coverage: '/TOTAL.*\s+(\d+%)$/'
 
 integration-tests:
   stage: test
   script:
-    - pip install -r requirements.txt pytest
+    - pip install -r requirements.txt pytest mlflow
     - pytest tests/integration/ -v --tb=short
+
+run-experiments:
+  stage: test
+  script:
+    - pip install -r requirements.txt mlflow
+    - python run_experiments.py
   allow_failure: true
+  artifacts:
+    paths:
+      - mlruns/
 
 deploy-staging:
   stage: deploy
