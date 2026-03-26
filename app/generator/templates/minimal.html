@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ tagline }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', sans-serif; background: #fafafa; color: #111; max-width: 720px; margin: 0 auto; padding: 48px 24px; }
+        h1 { font-size: 2rem; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 8px; }
+        .role { color: #555; font-size: 1rem; margin-bottom: 48px; border-bottom: 1px solid #e5e5e5; padding-bottom: 24px; }
+        h2 { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; color: #999; margin-bottom: 20px; }
+        .project { margin-bottom: 28px; }
+        .project h3 { font-size: 1rem; font-weight: 600; margin-bottom: 4px; }
+        .project p { color: #555; font-size: 0.9rem; line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <h1>{{ tagline }}</h1>
+    <p class="role">{{ target_role }}</p>
+    <h2>Projects</h2>
+    {% for project in projects %}
+    <div class="project">
+        <h3>{{ project.name }}</h3>
+        <p>{{ project.description }}</p>
+    </div>
+    {% endfor %}
+</body>
+</html>
