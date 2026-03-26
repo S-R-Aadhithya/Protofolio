@@ -1,19 +1,21 @@
 import os
 import json
-from langchain_openai import ChatOpenAI
+import mlflow
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.messages import SystemMessage, HumanMessage
 
 class BaseAgent:
-    def __init__(self, name, role, model="gpt-4o-mini"):
-        self.llm = ChatOpenAI(temperature=0.7, model=model)
+    def __init__(self, name, role, model="gemini-1.5-flash"):
+        self.llm = ChatGoogleGenerativeAI(model=model, temperature=0.7)
         self.name = name
         self.role = role
 
+    @mlflow.trace
     def get_opinion(self, context, user_input):
         """Stage 1: Initial expert opinion based on context and user input."""
-        api_key = os.getenv('OPENAI_API_KEY', '')
-        if not api_key or 'your_openai_api_key' in api_key or 'sk-dummy' in api_key:
+        api_key = os.getenv('GEMINI_API_KEY', '')
+        if not api_key or 'your_gemini_api_key' in api_key:
             return self._mock_opinion(user_input)
 
         system_msg = f"You are {self.name}, the {self.role} on the Council. {self.get_role_description()}"
@@ -64,10 +66,11 @@ class BaseAgent:
 
         return f"[MOCK] PERSPECTIVE: Focused on {user_input}."
 
+    @mlflow.trace
     def review(self, context, opinions):
         """Stage 2: Peer review of other council members' opinions."""
-        api_key = os.getenv('OPENAI_API_KEY', '')
-        if not api_key or 'your_openai_api_key' in api_key or 'sk-dummy' in api_key:
+        api_key = os.getenv('GEMINI_API_KEY', '')
+        if not api_key or 'your_gemini_api_key' in api_key:
             # Enhanced mock critiques
             if self.name == "Dave":
                 return f"[MOCK] Tech Lead's Critique: Elena's design looks great, but let's ensure the glassmorphism doesn't impact Lighthouse scores. Marcus, let's make sure the 'business value' we claim is technically verifiable in the code."
@@ -109,12 +112,13 @@ class ProductManager(BaseAgent):
 
 class Chairman(BaseAgent):
     def __init__(self):
-        super().__init__("Sophia", "Council Chairman", model="gpt-4o")
+        super().__init__("Sophia", "Council Chairman", model="gemini-1.5-flash")
 
+    @mlflow.trace
     def synthesize(self, user_input, deliberations):
         """Stage 3: Final synthesis into a concrete JSON blueprint."""
-        api_key = os.getenv('OPENAI_API_KEY', '')
-        if not api_key or 'your_openai_api_key' in api_key or 'sk-dummy' in api_key:
+        api_key = os.getenv('GEMINI_API_KEY', '')
+        if not api_key or 'your_gemini_api_key' in api_key:
             import json
             goal = user_input.lower()
             
