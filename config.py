@@ -33,5 +33,6 @@ class TestingConfig(Config):
 config_by_name = dict(
     dev=DevelopmentConfig,
     test=TestingConfig,
-    prod=ProductionConfig
+    prod=ProductionConfig,
+    production=ProductionConfig
 )
