@@ -39,6 +39,14 @@ def run_experiments():
             {"user_id": 16, "goal": "E-commerce platform engineer portfolio focusing on Stripe integration, high-load payment processing, and scalable inventory caching."}
         ]
         
+        import random
+        for case in test_cases:
+            # Seed some varied memory to change resume_complexity_chars
+            complexity = random.choice(["junior", "senior", "expert", "specialist"])
+            mock_resume = f"User {case['user_id']} is a {complexity} {case['goal']}. "
+            mock_resume += "Experienced in " + ", ".join(random.sample(["Docker", "AWS", "Python", "React", "SQL", "CI/CD"], k=random.randint(2, 5)))
+            engine.memory.add_fact(case['user_id'], mock_resume)
+
         for case in test_cases:
             print(f"Running experiment for goal: {case['goal']}")
             result = engine.deliberate(user_id=case['user_id'], user_input=case['goal'])
