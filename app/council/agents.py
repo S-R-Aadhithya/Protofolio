@@ -93,26 +93,26 @@ class BaseAgent:
         return ""
 
 class TechLead(BaseAgent):
-    def __init__(self):
-        super().__init__("Dave", "Tech Lead")
+    def __init__(self, model="gemini-1.5-flash"):
+        super().__init__("Dave", "Tech Lead", model=model)
     def get_role_description(self):
         return "Focus on technical stack, performance, scalability, and code quality."
 
 class Designer(BaseAgent):
-    def __init__(self):
-        super().__init__("Elena", "UI/UX Designer")
+    def __init__(self, model="gemini-1.5-flash"):
+        super().__init__("Elena", "UI/UX Designer", model=model)
     def get_role_description(self):
         return "Focus on visual aesthetics, user experience, typography, and responsive layout."
 
 class ProductManager(BaseAgent):
-    def __init__(self):
-        super().__init__("Marcus", "Product Manager")
+    def __init__(self, model="gemini-1.5-flash"):
+        super().__init__("Marcus", "Product Manager", model=model)
     def get_role_description(self):
         return "Focus on project scope, professional impact, target audience, and clear messaging."
 
 class Chairman(BaseAgent):
-    def __init__(self):
-        super().__init__("Sophia", "Council Chairman", model="gemini-1.5-flash")
+    def __init__(self, model="gemini-1.5-flash"):
+        super().__init__("Sophia", "Council Chairman", model=model)
 
     @mlflow.trace
     def synthesize(self, user_input, deliberations):
@@ -120,6 +120,7 @@ class Chairman(BaseAgent):
         api_key = os.getenv('GEMINI_API_KEY', '')
         if not api_key or 'your_gemini_api_key' in api_key:
             import json
+            import random
             goal = user_input.lower()
             
             # Dynamic Tech Stack Selection
@@ -136,14 +137,20 @@ class Chairman(BaseAgent):
                 tagline = f"Full-Stack Solution Architecture"
                 stack = ["Next.js", "TypeScript", "PostgreSQL", "Prisma", "Node.js"]
 
+            # Vary projects to affect quality score
+            num_projects = random.randint(1, 4)
+            projects = []
+            for i in range(num_projects):
+                projects.append({
+                    "name": f"Project {chr(65+i)} for {user_input[:10]}...",
+                    "description": f"Complexity level {random.randint(1, 10)} implementation."
+                })
+
             mock_blueprint = {
-                "tagline": tagline,
+                "tagline": tagline if random.random() > 0.1 else "", # Occasional missing tagline
                 "tech_stack": stack,
-                "layout_strategy": "A results-oriented layout with deep-dives into your most complex work.",
-                "projects": [
-                    {"name": "Representative Work A", "description": "High-impact project showcasing core skills and expertise."},
-                    {"name": "Representative Work B", "description": "Complex implementation focused on solving real-world challenges."}
-                ]
+                "layout_strategy": "A results-oriented layout." if random.random() > 0.05 else None,
+                "projects": projects
             }
             return json.dumps(mock_blueprint)
 
