@@ -19,32 +19,44 @@ install-deps:
   stage: build
   script:
     - pip install --upgrade pip
-    - pip install -r requirements.txt
+    - pip install -r requirements.txt mlflow optuna
 
 
 
 unit-tests:
   stage: test
   script:
-    - pip install -r requirements.txt pytest pytest-cov mlflow
+    - pip install -r requirements.txt pytest pytest-cov mlflow optuna
     - pytest tests/unit/ -v --tb=short --cov=app --cov-report=term-missing
   coverage: '/TOTAL.*\s+(\d+%)$/'
 
 integration-tests:
   stage: test
   script:
-    - pip install -r requirements.txt pytest mlflow
+    - pip install -r requirements.txt pytest mlflow optuna
     - pytest tests/integration/ -v --tb=short
 
 run-experiments:
   stage: test
   script:
-    - pip install -r requirements.txt mlflow
+    - pip install -r requirements.txt mlflow optuna
     - python run_experiments.py
   allow_failure: true
   artifacts:
     paths:
       - mlruns/
+
+run-optuna-tuning:
+  stage: test
+  script:
+    - pip install -r requirements.txt mlflow optuna
+    - python optuna_tuner.py --trials 5
+  allow_failure: true
+  artifacts:
+    paths:
+      - mlruns/
+  variables:
+    GIT_PYTHON_REFRESH: quiet
 
 deploy-staging:
   stage: deploy
