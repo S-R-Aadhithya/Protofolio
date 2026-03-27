@@ -34,9 +34,25 @@ class CouncilEngine:
         return score
 
     @mlflow.trace(name="Council Deliberation Pipeline")
-    def deliberate(self, user_id, user_input):
+    def deliberate(self, user_id, user_input, agent_config=None):
+        """
+        Run a full council deliberation.
+
+        Args:
+            user_id: Unique user identifier for memory retrieval.
+            user_input: The user's portfolio goal.
+            agent_config (dict, optional): Hyperparameter overrides for Optuna tuning.
+                Keys: 'temperature' (float), 'model' (str)
+        """
         print(f"DEBUG: Starting deliberation for user {user_id} with goal: {user_input}")
-        
+
+        # Apply agent_config overrides (used by Optuna tuner)
+        if agent_config:
+            temperature = agent_config.get("temperature")
+            model = agent_config.get("model")
+            for agent in [self.tech_lead, self.designer, self.pm, self.chairman]:
+                agent.update_config(temperature=temperature, model=model)
+
         # Setup MLflow from app config if available
         if current_app:
             tracking_uri = current_app.config.get('MLFLOW_TRACKING_URI', 'file:./mlruns')
@@ -46,26 +62,31 @@ class CouncilEngine:
         else:
             mlflow.set_tracking_uri('file:./mlruns')
             mlflow.set_experiment('Protofolio_Generation')
-            
+
         # Enable MLflow LLM Auto-Tracing for Langchain
         mlflow.langchain.autolog()
-            
+
         with mlflow.start_run(run_name=f"Deliberate_{user_id}"):
             start_time = time.time()
-            
+
             # Retrieve RAG Context from Mem0
             print("DEBUG: Retrieving memory chunks...")
             context = self.memory.retrieve_chunks(user_id, user_input)
             print(f"DEBUG: Retrieved context: {len(context)} chars")
-            
+
+            # Determine active temperature/model (post-config or defaults)
+            active_temperature = self.tech_lead._temperature
+            active_model = self.tech_lead._model
+
             # Log Parameters
             mlflow.log_params({
                 "user_input_length": len(user_input),
                 "resume_complexity_chars": len(context),
-                "tech_lead_model": getattr(self.tech_lead.llm, 'model_name', 'default'),
-                "designer_model": getattr(self.designer.llm, 'model_name', 'default'),
-                "pm_model": getattr(self.pm.llm, 'model_name', 'default'),
-                "chairman_model": getattr(self.chairman.llm, 'model_name', 'default')
+                "temperature": active_temperature,
+                "tech_lead_model": active_model,
+                "designer_model": self.designer._model,
+                "pm_model": self.pm._model,
+                "chairman_model": self.chairman._model,
             })
 
             with get_openai_callback() as cb:
@@ -75,28 +96,28 @@ class CouncilEngine:
                     self.designer.get_opinion(context, user_input),
                     self.pm.get_opinion(context, user_input)
                 ]
-                
+
                 # Stage 2: Reviews
                 reviews = [
                     self.tech_lead.review(context, opinions),
                     self.designer.review(context, opinions),
                     self.pm.review(context, opinions)
                 ]
-                
+
                 # Format deliberations for synthesis
                 deliberation_history = "--- INITIAL OPINIONS ---\n"
                 deliberation_history += f"Tech Lead Original: {opinions[0]}\n\n"
                 deliberation_history += f"Designer Original: {opinions[1]}\n\n"
                 deliberation_history += f"PM Original: {opinions[2]}\n\n"
-                
+
                 deliberation_history += "--- PEER REVIEWS & CRITIQUES ---\n"
                 deliberation_history += f"Tech Lead Review: {reviews[0]}\n\n"
                 deliberation_history += f"Designer Review: {reviews[1]}\n\n"
                 deliberation_history += f"PM Review: {reviews[2]}\n\n"
-                    
+
                 # Stage 3: Synthesis
                 final_blueprint_str = self.chairman.synthesize(user_input, deliberation_history)
-            
+
             latency = time.time() - start_time
 
             # Try to parse JSON from synthesis
@@ -111,7 +132,7 @@ class CouncilEngine:
                 blueprint = {"error": "Failed to parse synthesis", "raw": final_blueprint_str}
 
             quality_score = self._calculate_quality_score(blueprint)
-            
+
             # Generate HTML Portfolio Artifact
             try:
                 renderer = PortfolioRenderer()
@@ -128,21 +149,21 @@ class CouncilEngine:
                 "completion_tokens": cb.completion_tokens,
                 "quality_score": quality_score
             })
-            
+
             # Log Artifacts
             with tempfile.TemporaryDirectory() as tmpdir:
                 delib_path = os.path.join(tmpdir, "deliberation_log.txt")
                 with open(delib_path, "w", encoding="utf-8") as f:
                     f.write(deliberation_history)
-                
+
                 blueprint_path = os.path.join(tmpdir, "blueprint.json")
                 with open(blueprint_path, "w", encoding="utf-8") as f:
                     json.dump(blueprint, f, indent=2)
-                    
+
                 html_path = os.path.join(tmpdir, "portfolio.html")
                 with open(html_path, "w", encoding="utf-8") as f:
                     f.write(html_output)
-                    
+
                 mlflow.log_artifacts(tmpdir)
 
         return {
