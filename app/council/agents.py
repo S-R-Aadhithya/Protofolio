@@ -6,10 +6,20 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.messages import SystemMessage, HumanMessage
 
 class BaseAgent:
-    def __init__(self, name, role, model="gemini-1.5-flash"):
-        self.llm = ChatGoogleGenerativeAI(model=model, temperature=0.7)
+    def __init__(self, name, role, model="gemini-1.5-flash", temperature=0.7):
         self.name = name
         self.role = role
+        self._model = model
+        self._temperature = temperature
+        self.llm = ChatGoogleGenerativeAI(model=model, temperature=temperature)
+
+    def update_config(self, temperature=None, model=None):
+        """Dynamically reconfigure the LLM for Optuna hyperparameter sweeps."""
+        if temperature is not None:
+            self._temperature = temperature
+        if model is not None:
+            self._model = model
+        self.llm = ChatGoogleGenerativeAI(model=self._model, temperature=self._temperature)
 
     @mlflow.trace
     def get_opinion(self, context, user_input):
@@ -80,7 +90,6 @@ class BaseAgent:
             return response.content
         except Exception as e:
             print(f"WARNING: Agent {self.name} review failed: {e}. Falling back to mock critique.")
-            # Reuse mock logic or simple return
             if self.name == "Dave":
                 return f"[MOCK] Tech Lead's Critique: Content looks technically sound, but let's optimize performance further."
             if self.name == "Elena":
@@ -93,26 +102,26 @@ class BaseAgent:
         return ""
 
 class TechLead(BaseAgent):
-    def __init__(self):
-        super().__init__("Dave", "Tech Lead")
+    def __init__(self, temperature=0.7, model="gemini-1.5-flash"):
+        super().__init__("Dave", "Tech Lead", model=model, temperature=temperature)
     def get_role_description(self):
         return "Focus on technical stack, performance, scalability, and code quality."
 
 class Designer(BaseAgent):
-    def __init__(self):
-        super().__init__("Elena", "UI/UX Designer")
+    def __init__(self, temperature=0.7, model="gemini-1.5-flash"):
+        super().__init__("Elena", "UI/UX Designer", model=model, temperature=temperature)
     def get_role_description(self):
         return "Focus on visual aesthetics, user experience, typography, and responsive layout."
 
 class ProductManager(BaseAgent):
-    def __init__(self):
-        super().__init__("Marcus", "Product Manager")
+    def __init__(self, temperature=0.7, model="gemini-1.5-flash"):
+        super().__init__("Marcus", "Product Manager", model=model, temperature=temperature)
     def get_role_description(self):
         return "Focus on project scope, professional impact, target audience, and clear messaging."
 
 class Chairman(BaseAgent):
-    def __init__(self):
-        super().__init__("Sophia", "Council Chairman", model="gemini-1.5-flash")
+    def __init__(self, temperature=0.7, model="gemini-1.5-flash"):
+        super().__init__("Sophia", "Council Chairman", model=model, temperature=temperature)
 
     @mlflow.trace
     def synthesize(self, user_input, deliberations):
@@ -130,8 +139,7 @@ class Chairman(BaseAgent):
             import json
             import random
             goal = user_input.lower()
-            
-            # Dynamic Tech Stack Selection (from previous mock logic)
+
             if "front" in goal:
                 tagline, stack = "Mastering the UI/UX Frontier", ["React", "TypeScript", "Tailwind CSS", "Vite", "Framer Motion"]
             elif "back" in goal:
