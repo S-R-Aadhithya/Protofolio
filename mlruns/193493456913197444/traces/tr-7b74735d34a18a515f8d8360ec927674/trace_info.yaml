@@ -1,0 +1,10 @@
+execution_duration_ms: 91
+request_preview: '{"content": "Raw resume text here", "source_type": "resume"}'
+request_time: '2026-04-02T18:18:19.559Z'
+response_preview: '"Structured Summary: Experienced developer with Python and React."'
+state: OK
+trace_id: tr-7b74735d34a18a515f8d8360ec927674
+trace_location:
+  mlflow_experiment:
+    experiment_id: '193493456913197444'
+  type: MLFLOW_EXPERIMENT

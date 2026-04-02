@@ -1,0 +1,11 @@
+execution_duration_ms: 75
+request_preview: '{"content": "LinkedIn profile: https://linkedin.com/in/test", "source_type":
+  "linkedin"}'
+request_time: '2026-04-02T20:13:13.064Z'
+response_preview: '"Summary of linkedin data: LinkedIn profile: https://linkedin.com/in/test..."'
+state: OK
+trace_id: tr-ef7c9d57ba5a8b32c1451a8bbe9e5347
+trace_location:
+  mlflow_experiment:
+    experiment_id: '193493456913197444'
+  type: MLFLOW_EXPERIMENT

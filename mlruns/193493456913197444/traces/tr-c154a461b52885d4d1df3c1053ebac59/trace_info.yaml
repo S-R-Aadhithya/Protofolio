@@ -1,0 +1,18 @@
+execution_duration_ms: 42
+request_preview: '{"context": "Mock context: General developer background with core
+  engineering proficiency.", "opinions": ["[MOCK] As Tech Lead, I''ve reviewed your
+  goal. I recommend a React/Next.js stack with TypeScript to ensure type safety and
+  optimal performance. We''ll focus on component-driven architecture.", "[MOCK] Elena
+  here. This portfolio needs a pixel-perfect, highly responsive UI. I suggest using
+  Tailwind CSS with subtle micro-animations and a sleek glassmorphism theme.", "[MOCK]
+  Marcus here. Market yourself as a specialist in user engagement. We''ll frame your
+  projects around ''time-to-interactive'' and user-centric problem solving."]}'
+request_time: '2026-04-02T19:37:19.148Z'
+response_preview: '"[MOCK] Tech Lead''s Critique: Content looks technically sound,
+  but let''s optimize performance further."'
+state: OK
+trace_id: tr-c154a461b52885d4d1df3c1053ebac59
+trace_location:
+  mlflow_experiment:
+    experiment_id: '193493456913197444'
+  type: MLFLOW_EXPERIMENT

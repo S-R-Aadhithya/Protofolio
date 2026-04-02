@@ -1,0 +1,13 @@
+execution_duration_ms: 4529
+request_preview: '{"context": "Mock context: General developer background with core
+  engineering proficiency.", "user_input": "Full Stack"}'
+request_time: '2026-04-02T19:51:29.855Z'
+response_preview: '"[MOCK] As Tech Lead, I''ve reviewed your goal. A modern Full Stack
+  approach like the T3 stack or Next.js with Prisma and PostgreSQL will show you can
+  handle both ends efficiently."'
+state: OK
+trace_id: tr-d385f603d19f6284de2313ba371b09b8
+trace_location:
+  mlflow_experiment:
+    experiment_id: '193493456913197444'
+  type: MLFLOW_EXPERIMENT

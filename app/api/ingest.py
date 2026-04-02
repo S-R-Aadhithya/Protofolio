@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from ..council.memory import memory
+from ..council.memory import MemoryManager
+from ..council.agents import Chairman
 from ..models import User, db
 import io
 import json
@@ -43,10 +44,11 @@ def upload_resume():
     else:
         extracted_text = "Sample parsed resume text with skills in Python, React, and AWS."
 
-    memory.add(
-        messages=[{"role": "user", "content": f"Here is my resume content: {extracted_text}"}],
-        user_id=current_user
-    )
+    chairman = Chairman()
+    structured_summary = chairman.process_ingestion(extracted_text, source_type="resume")
+
+    mgr = MemoryManager()
+    mgr.add_fact(user_id=current_user, content=structured_summary)
 
     return jsonify({"message": "Resume parsed and added to AI memory.", "extracted_text": extracted_text}), 200
 
@@ -76,10 +78,11 @@ def ingest_linkedin():
         except Exception:
             pass
 
-    memory.add(
-        messages=[{"role": "user", "content": f"My LinkedIn profile: {profile_summary}"}],
-        user_id=current_user_email
-    )
+    chairman = Chairman()
+    structured_summary = chairman.process_ingestion(profile_summary, source_type="linkedin")
+
+    mgr = MemoryManager()
+    mgr.add_fact(user_id=current_user_email, content=structured_summary)
 
     if user:
         user.linkedin_handle = handle
@@ -124,14 +127,21 @@ def fetch_github():
         repo_summary += f"Top {len(top_repos)} by stars: "
         repo_summary += json.dumps(top_repos)
 
+        chairman = Chairman()
+        structured_summary = chairman.process_ingestion(repo_summary, source_type="github")
+
         from ..models import MemoryChunk
         chunk = MemoryChunk(
             user_id=user.id,
-            content=f"My GitHub profile summary and top repositories: {repo_summary}",
+            content=structured_summary,
             metadata_json=json.dumps({"source": "github", "type": "repositories"})
         )
         db.session.add(chunk)
         db.session.commit()
+
+        # Also add to Mem0 for council context
+        mgr = MemoryManager()
+        mgr.add_fact(user_id=current_user_email, content=structured_summary)
 
         return jsonify({
             "message": f"Fetched repos for {username} and saved to AI memory.",
@@ -148,10 +158,8 @@ def set_job_goal():
     current_user = get_jwt_identity()
     goal = request.json.get('jobGoal')
 
-    memory.add(
-        messages=[{"role": "user", "content": f"My target job role is: {goal}"}],
-        user_id=current_user
-    )
+    mgr = MemoryManager()
+    mgr.add_fact(user_id=current_user, content=f"My target job role is: {goal}")
 
     return jsonify({"message": "Job goal updated and saved to AI memory", "goal": goal}), 200
 

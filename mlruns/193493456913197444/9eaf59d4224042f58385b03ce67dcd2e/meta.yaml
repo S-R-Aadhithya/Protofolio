@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Projects/Protofolio/mlruns/193493456913197444/9eaf59d4224042f58385b03ce67dcd2e/artifacts
+end_time: 1775158639372
+entry_point_name: ''
+experiment_id: '193493456913197444'
+lifecycle_stage: active
+run_id: 9eaf59d4224042f58385b03ce67dcd2e
+run_name: Stream_Deliberate_2
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1775158635549
+status: 4
+tags: []
+user_id: Aadhithya

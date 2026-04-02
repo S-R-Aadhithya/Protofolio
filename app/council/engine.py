@@ -218,7 +218,7 @@ class CouncilEngine:
                 designer_review = self.designer.review(context, opinions)
                 
                 yield f"data: {json.dumps({'type': 'status', 'agent': 'Product Manager', 'message': 'Reviewing market fit...'})}\n\n"
-                pm_review = self.pm.get_opinion(context, opinions) 
+                pm_review = self.pm.review(context, opinions) 
 
                 reviews = [tech_review, designer_review, pm_review]
 

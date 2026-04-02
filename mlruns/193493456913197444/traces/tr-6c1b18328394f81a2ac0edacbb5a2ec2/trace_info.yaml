@@ -1,0 +1,19 @@
+execution_duration_ms: 78
+request_preview: '{"content": "Caltech University, California                                                                                                                                                                                           June
+  2010 \nBachelor of Science in Electrical Engineering      GPA: 3.5/4.0\nHuman-Centric
+  AI for HealthTech, MIT Research Lab \nCloud-Based Education PlatformDeveloped an
+  AI-powered diagnostic tool with 95% accuracy for analysing medical imaging.\nCollaborated
+  with healthcare providers to deploy the tool, enhancing patient outcomes globally.\nBuilt
+  a scalable cloud platform for virtual learning, utilized in over 50 countries.\nIntegrated
+  real-time analytics for tracking student engagement and performance.Autonomous Driving
+  System Development, Tesla Inc. \nDesigned and implemented advanced machine learning
+  models for autonomous vehicles, improving sensor accuracy by 20%.\nConducted extensive
+  simulations and real-world tests to validate system performance un...'
+request_time: '2026-04-02T20:20:20.654Z'
+response_preview: '"Summary of resume data: Caltech University, California                                                                                                                                                                          ..."'
+state: OK
+trace_id: tr-6c1b18328394f81a2ac0edacbb5a2ec2
+trace_location:
+  mlflow_experiment:
+    experiment_id: '193493456913197444'
+  type: MLFLOW_EXPERIMENT

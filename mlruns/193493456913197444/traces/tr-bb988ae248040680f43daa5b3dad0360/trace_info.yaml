@@ -1,0 +1,13 @@
+execution_duration_ms: 124
+request_preview: '{"context": "Mock context: General developer background with core
+  engineering proficiency.", "user_input": "Machine Learning Engineer"}'
+request_time: '2026-04-02T19:20:42.825Z'
+response_preview: '"[MOCK] Marcus here. Lead with the insights. Your projects shouldn''t
+  just be ''models''; they are ''decision support tools'' that drove 20% efficiency
+  gains."'
+state: OK
+trace_id: tr-bb988ae248040680f43daa5b3dad0360
+trace_location:
+  mlflow_experiment:
+    experiment_id: '193493456913197444'
+  type: MLFLOW_EXPERIMENT

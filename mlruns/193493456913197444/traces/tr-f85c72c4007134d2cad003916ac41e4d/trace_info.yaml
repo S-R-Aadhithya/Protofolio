@@ -1,0 +1,10 @@
+execution_duration_ms: 3
+request_preview: '{"context": "User context", "user_input": "Software Engineer"}'
+request_time: '2026-04-02T18:18:19.687Z'
+response_preview: '"I think we should use React."'
+state: OK
+trace_id: tr-f85c72c4007134d2cad003916ac41e4d
+trace_location:
+  mlflow_experiment:
+    experiment_id: '193493456913197444'
+  type: MLFLOW_EXPERIMENT

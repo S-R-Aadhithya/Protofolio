@@ -1,0 +1,13 @@
+execution_duration_ms: 3132
+request_preview: '{"context": "Mock context: General developer background with core
+  engineering proficiency.", "user_input": "UI/UX Designer"}'
+request_time: '2026-04-02T19:37:15.993Z'
+response_preview: '"[MOCK] Marcus here. Market yourself as a specialist in user engagement.
+  We''ll frame your projects around ''time-to-interactive'' and user-centric problem
+  solving."'
+state: OK
+trace_id: tr-fa781fbf0eb6ed16461bd43e082b8736
+trace_location:
+  mlflow_experiment:
+    experiment_id: '193493456913197444'
+  type: MLFLOW_EXPERIMENT
