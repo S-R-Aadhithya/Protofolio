@@ -4,42 +4,220 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ tagline }}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Outfit', sans-serif; background: #f0f4ff; color: #1a1a2e; margin: 0; }
-        .hero {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white; text-align: center; padding: 100px 24px;
-            clip-path: ellipse(100% 85% at 50% 15%);
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            scroll-behavior: smooth;
         }
-        h1 { font-size: 2.8rem; font-weight: 800; margin-bottom: 12px; }
-        .role { font-size: 1.1rem; opacity: 0.85; }
-        .container { max-width: 900px; margin: 0 auto; padding: 60px 24px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 24px; }
-        .card {
-            background: white; border-radius: 16px; padding: 28px;
-            box-shadow: 0 4px 24px rgba(102,126,234,0.1);
-            transition: transform 0.2s;
+
+        :root {
+            --primary: #f0f4ff;
+            --secondary: #1a1a2e;
+            --accent: #ff00ff;
+            --accent-soft: rgba(255, 0, 255, 0.1);
+            --gradient: linear-gradient(135deg, #12c2e9, #c471ed, #f64f59);
         }
-        .card:hover { transform: translateY(-4px); }
-        .card h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 8px; color: #667eea; }
-        .card p { font-size: 0.9rem; color: #555; line-height: 1.6; }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--primary);
+            color: var(--secondary);
+            overflow-x: hidden;
+        }
+
+        /* Nav */
+        nav {
+            padding: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--secondary);
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--secondary);
+            font-weight: 600;
+            margin-left: 2rem;
+            font-size: 1rem;
+            text-transform: uppercase;
+        }
+
+        /* Hero */
+        #hero {
+            height: 80vh;
+            display: flex;
+            align-items: center;
+            padding: 0 4rem;
+            position: relative;
+        }
+
+        .hero-text {
+            z-index: 10;
+            max-width: 800px;
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 5rem;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 2rem;
+            color: var(--secondary);
+        }
+
+        .hero-title-accent {
+            font-style: italic;
+            color: transparent;
+            -webkit-text-stroke: 1.5px var(--secondary);
+        }
+
+        .badge {
+            display: inline-block;
+            background: var(--secondary);
+            color: var(--primary);
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Sections */
+        section {
+            padding: 100px 4rem;
+            border-bottom: 2px solid var(--secondary);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 4rem;
+        }
+
+        .section-header h2 {
+            font-size: 3rem;
+            font-family: 'Playfair Display', serif;
+        }
+
+        /* Projects */
+        .projects-scroll {
+            display: flex;
+            overflow-x: auto;
+            gap: 2rem;
+            padding-bottom: 2rem;
+            scrollbar-width: thin;
+            scrollbar-color: var(--secondary) transparent;
+        }
+
+        .project-card {
+            min-width: 400px;
+            background: white;
+            border: 2px solid var(--secondary);
+            padding: 2.5rem;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .project-card:hover {
+            transform: rotate(-2deg);
+            background: var(--accent-soft);
+            box-shadow: 10px 10px 0px var(--secondary);
+        }
+
+        .project-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .project-card p {
+            color: #555;
+            font-size: 1rem;
+        }
+
+        /* Expertise */
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 2rem;
+        }
+
+        .skill {
+            font-size: 1.25rem;
+            font-weight: 800;
+            padding: 2rem;
+            border: 2px solid var(--secondary);
+            text-align: center;
+            background: white;
+            transition: background 0.2s;
+        }
+
+        .skill:hover {
+            background: var(--secondary);
+            color: var(--primary);
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 3rem; }
+            section { padding: 60px 2rem; }
+            .project-card { min-width: 100%; }
+        }
     </style>
 </head>
 <body>
-    <div class="hero">
-        <h1>{{ tagline }}</h1>
-        <p class="role">{{ target_role }}</p>
-    </div>
-    <div class="container">
-        <div class="grid">
+    <nav>
+        <div style="font-weight: 800; font-size: 1.5rem; letter-spacing: -2px;">PRTF.</div>
+        <div class="nav-links">
+            <a href="#projects">Work</a>
+            <a href="#about">About</a>
+            <a href="#contact">Contact</a>
+        </div>
+    </nav>
+
+    <section id="hero">
+        <div class="hero-text">
+            <span class="badge">{{ target_role }}</span>
+            <h1>{{ tagline }} <span class="hero-title-accent">Creative Solutions.</span></h1>
+            <p style="font-size: 1.25rem; max-width: 600px;">{{ layout_strategy }}</p>
+        </div>
+    </section>
+
+    <section id="projects">
+        <div class="section-header">
+            <h2>Work</h2>
+        </div>
+        <div class="projects-scroll">
             {% for project in projects %}
-            <div class="card">
+            <div class="project-card">
                 <h3>{{ project.name }}</h3>
                 <p>{{ project.description }}</p>
             </div>
             {% endfor %}
         </div>
-    </div>
+    </section>
+
+    <section id="about">
+        <div class="section-header">
+            <h2>Expertise</h2>
+        </div>
+        <div class="skills-grid">
+            {% for tech in tech_stack %}
+            <div class="skill">{{ tech }}</div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section id="contact" style="text-align: center; background: var(--secondary); color: var(--primary);">
+        <h2 style="font-family: 'Playfair Display'; font-size: 4rem;">Let's Talk.</h2>
+        <p style="font-size: 1.5rem; margin-top: 2rem;">Available for creative collaborations.</p>
+    </section>
+
+    {% if portfolio_id %}
+    <script>
+        fetch(`/api/portfolio/{{ portfolio_id }}/analytics`, { method: 'POST' });
+    </script>
+    {% endif %}
 </body>
 </html>
