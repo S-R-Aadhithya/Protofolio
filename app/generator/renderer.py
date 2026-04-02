@@ -13,11 +13,12 @@ class PortfolioRenderer:
             autoescape=True
         )
 
-    def render(self, blueprint, theme='dark'):
+    def render(self, blueprint, theme='dark', portfolio_id=None):
         if theme not in VALID_THEMES:
             theme = 'dark'
         template = self.env.get_template(f'{theme}.html')
         html = template.render(
+            portfolio_id=portfolio_id,
             tagline=blueprint.get('tagline', 'My Portfolio'),
             target_role=blueprint.get('target_role', ''),
             projects=blueprint.get('projects', []),

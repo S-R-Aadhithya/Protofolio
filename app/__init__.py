@@ -9,7 +9,7 @@ def create_app(config_name):
     app.config.from_object(config_by_name[config_name])
 
     # Initialize extensions
-    CORS(app, resources={r"/api/*": {"origins": app.config.get('CORS_ALLOWED_ORIGINS')}})
+    CORS(app, resources={r"/api/*": {"origins": ["http://localhost:5173", "http://localhost:3000"]}})
     db.init_app(app)
     bcrypt.init_app(app)
     jwt.init_app(app)
@@ -38,6 +38,8 @@ def create_app(config_name):
     # Register blueprints
     from .api.auth import auth_bp, oauth
     
+    app.register_blueprint(auth_bp, url_prefix='/api/auth')
+    
     oauth.init_app(app)
     oauth.register(
         name='github',
@@ -50,18 +52,6 @@ def create_app(config_name):
         api_base_url='https://api.github.com/',
         client_kwargs={'scope': 'user:email read:user repo'},
     )
-    
-    oauth.register(
-        name='google',
-        client_id=app.config.get('GOOGLE_CLIENT_ID'),
-        client_secret=app.config.get('GOOGLE_CLIENT_SECRET'),
-        server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
-        client_kwargs={
-            'scope': 'openid email profile'
-        }
-    )
-
-    app.register_blueprint(auth_bp, url_prefix='/api/auth')
     
     from .api.ingest import ingest_bp
     from .api.portfolio import portfolio_bp

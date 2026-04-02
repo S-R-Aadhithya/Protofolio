@@ -170,3 +170,83 @@ class CouncilEngine:
             "deliberation": deliberation_history,
             "blueprint": blueprint
         }
+
+    def deliberate_stream(self, user_id, user_input, agent_config=None):
+        """Generator yielding SSE strings for live portfolio generation."""
+        yield f"data: {json.dumps({'type': 'status', 'agent': 'System', 'message': 'Initializing Council...'})}\n\n"
+        
+        # Setup MLflow from app config if available
+        if current_app:
+            tracking_uri = current_app.config.get('MLFLOW_TRACKING_URI', 'file:./mlruns')
+            experiment_name = current_app.config.get('MLFLOW_EXPERIMENT_NAME', 'Protofolio_Generation')
+            mlflow.set_tracking_uri(tracking_uri)
+            mlflow.set_experiment(experiment_name)
+        else:
+            mlflow.set_tracking_uri('file:./mlruns')
+            mlflow.set_experiment('Protofolio_Generation')
+
+        mlflow.langchain.autolog()
+
+        with mlflow.start_run(run_name=f"Stream_Deliberate_{user_id}"):
+            start_time = time.time()
+
+            yield f"data: {json.dumps({'type': 'status', 'agent': 'Memory', 'message': 'Retrieving context from Mem0...'})}\n\n"
+            context = self.memory.retrieve_chunks(user_id, user_input)
+
+            if agent_config:
+                temperature = agent_config.get("temperature")
+                model = agent_config.get("model")
+                for agent in [self.tech_lead, self.designer, self.pm, self.chairman]:
+                    agent.update_config(temperature=temperature, model=model)
+
+            with get_openai_callback() as cb:
+                yield f"data: {json.dumps({'type': 'status', 'agent': 'Tech Lead', 'message': 'Drafting technical opinion...'})}\n\n"
+                tech_opinion = self.tech_lead.get_opinion(context, user_input)
+                
+                yield f"data: {json.dumps({'type': 'status', 'agent': 'Designer', 'message': 'Drafting design layout...'})}\n\n"
+                designer_opinion = self.designer.get_opinion(context, user_input)
+                
+                yield f"data: {json.dumps({'type': 'status', 'agent': 'Product Manager', 'message': 'Drafting product strategy...'})}\n\n"
+                pm_opinion = self.pm.get_opinion(context, user_input)
+
+                opinions = [tech_opinion, designer_opinion, pm_opinion]
+
+                yield f"data: {json.dumps({'type': 'status', 'agent': 'Tech Lead', 'message': 'Reviewing peers...'})}\n\n"
+                tech_review = self.tech_lead.review(context, opinions)
+                
+                yield f"data: {json.dumps({'type': 'status', 'agent': 'Designer', 'message': 'Reviewing styling...'})}\n\n"
+                designer_review = self.designer.review(context, opinions)
+                
+                yield f"data: {json.dumps({'type': 'status', 'agent': 'Product Manager', 'message': 'Reviewing market fit...'})}\n\n"
+                pm_review = self.pm.get_opinion(context, opinions) 
+
+                reviews = [tech_review, designer_review, pm_review]
+
+                deliberation_history = "--- INITIAL OPINIONS ---\n"
+                for i, op in enumerate(opinions):
+                    deliberation_history += f"Agent {i} Original: {op}\n\n"
+                deliberation_history += "--- REVIEWS ---\n"
+                for i, r in enumerate(reviews):
+                    deliberation_history += f"Agent {i} Review: {r}\n\n"
+
+                yield f"data: {json.dumps({'type': 'status', 'agent': 'Chairman', 'message': 'Synthesizing final blueprint...'})}\n\n"
+                final_blueprint_str = self.chairman.synthesize(user_input, deliberation_history)
+
+            try:
+                json_str = final_blueprint_str
+                if "```json" in json_str: json_str = json_str.split("```json")[1].split("```")[0]
+                elif "```" in json_str: json_str = json_str.split("```")[1].split("```")[0]
+                blueprint = json.loads(json_str)
+            except Exception:
+                blueprint = {"error": "Failed to parse synthesis"}
+                
+            latency = time.time() - start_time
+            quality_score = self._calculate_quality_score(blueprint)
+
+            mlflow.log_metrics({
+                "latency_seconds": latency,
+                "total_tokens": cb.total_tokens,
+                "quality_score": quality_score
+            })
+
+        yield f"data: {json.dumps({'type': 'complete', 'blueprint': blueprint})}\n\n"

@@ -26,6 +26,7 @@ class Portfolio(db.Model):
     target_role = db.Column(db.String(120))
     github_repo_url = db.Column(db.String(255))
     github_pages_url = db.Column(db.String(255))
+    views = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
 class PortfolioProject(db.Model):

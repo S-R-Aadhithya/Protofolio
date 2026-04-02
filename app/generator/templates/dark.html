@@ -4,32 +4,249 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ tagline }}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background: #0d1117; color: #c9d1d9; }
-        .hero { background: linear-gradient(135deg, #161b22, #1f6feb22); padding: 80px 0; }
-        h1 { color: #58a6ff; font-weight: 700; }
-        .card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 20px; margin-bottom: 16px; }
-        .badge-lang { background: #1f6feb; color: #fff; padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; margin-right: 6px; }
+        :root {
+            --bg-color: #0d1117;
+            --card-bg: #161b22;
+            --border: #30363d;
+            --text: #c9d1d9;
+            --accent: #58a6ff;
+            --accent-dim: #1f6feb22;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg-color);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(13, 17, 23, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            z-index: 1000;
+            padding: 1rem 0;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-weight: 700;
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 1.25rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: var(--text);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent);
+        }
+
+        /* Hero */
+        #hero {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: radial-gradient(circle at center, var(--accent-dim) 0%, transparent 70%);
+        }
+
+        h1 {
+            font-size: 4rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(to right, #fff, var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -2px;
+        }
+
+        .role-badge {
+            background: var(--accent-dim);
+            color: var(--accent);
+            padding: 0.5rem 1.5rem;
+            border-radius: 100px;
+            border: 1px solid var(--accent);
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+        }
+
+        /* Sections */
+        section {
+            padding: 100px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 3rem;
+            color: var(--accent);
+        }
+
+        /* Projects */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 2rem;
+            border-radius: 12px;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent);
+        }
+
+        .card h3 {
+            margin-bottom: 1rem;
+            font-size: 1.25rem;
+        }
+
+        .card p {
+            color: #8b949e;
+            font-size: 0.95rem;
+        }
+
+        /* Tech Stack */
+        .tech-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .tag {
+            background: #21262d;
+            border: 1px solid var(--border);
+            padding: 0.4rem 1rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+        }
+
+        /* Footer */
+        footer {
+            padding: 4rem 0;
+            text-align: center;
+            color: #8b949e;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2.5rem; }
+            .nav-links { display: none; }
+        }
     </style>
 </head>
 <body>
-    <section class="hero text-center">
-        <div class="container">
-            <h1>{{ tagline }}</h1>
-            <p class="lead text-secondary">{{ target_role }}</p>
+    <nav>
+        <div class="container nav-content">
+            <a href="#" class="logo">Portfolio</a>
+            <div class="nav-links">
+                <a href="#about">About</a>
+                <a href="#projects">Projects</a>
+                <a href="#skills">Skills</a>
+                <a href="#contact">Contact</a>
+            </div>
+        </div>
+    </nav>
+
+    <div id="hero">
+        <div class="role-badge">{{ target_role }}</div>
+        <h1>{{ tagline }}</h1>
+    </div>
+
+    <section id="about" class="container">
+        <h2 class="section-title">Strategy</h2>
+        <p style="max-width: 800px; font-size: 1.1rem; color: #8b949e;">{{ layout_strategy }}</p>
+    </section>
+
+    <section id="projects" class="container">
+        <h2 class="section-title">Featured Projects</h2>
+        <div class="grid">
+            {% for project in projects %}
+            <div class="card">
+                <h3>{{ project.name }}</h3>
+                <p>{{ project.description }}</p>
+            </div>
+            {% endfor %}
         </div>
     </section>
-    <div class="container py-5">
-        <h2 class="mb-4" style="color:#58a6ff;">Projects</h2>
-        {% for project in projects %}
-        <div class="card">
-            <h5>{{ project.name }}</h5>
-            <p class="text-secondary mb-0">{{ project.description }}</p>
+
+    <section id="skills" class="container">
+        <h2 class="section-title">Core Expertise</h2>
+        <div class="tech-tags">
+            {% for tech in tech_stack %}
+            <span class="tag">{{ tech }}</span>
+            {% endfor %}
         </div>
-        {% endfor %}
-    </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    </section>
+
+    <section id="contact" class="container" style="text-align: center;">
+        <h2 class="section-title">Get In Touch</h2>
+        <p>Interested in working together? Reach out via LinkedIn or GitHub.</p>
+    </section>
+
+    <footer class="container">
+        <p>&copy; 2026 {{ tagline }}. Built with Protofolio.</p>
+    </footer>
+
+    {% if portfolio_id %}
+    <script>
+        // Analytics Tracking
+        try {
+            fetch(`/api/portfolio/{{ portfolio_id }}/analytics`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+        } catch (e) {
+            console.error("Analytics failure", e);
+        }
+    </script>
+    {% endif %}
 </body>
 </html>
