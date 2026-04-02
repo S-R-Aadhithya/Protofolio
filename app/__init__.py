@@ -9,7 +9,7 @@ def create_app(config_name):
     app.config.from_object(config_by_name[config_name])
 
     # Initialize extensions
-    CORS(app, resources={r"/api/*": {"origins": ["http://localhost:5173", "http://localhost:3000"]}})
+    CORS(app, resources={r"/api/*": {"origins": ["http://localhost:5173", "http://localhost:3000"]}}, supports_credentials=True, allow_headers="*")
     db.init_app(app)
     bcrypt.init_app(app)
     jwt.init_app(app)

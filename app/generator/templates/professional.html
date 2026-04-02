@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ tagline }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Lora:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #7f8c8d;
+            --accent: #34495e;
+            --border: #ecf0f1;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            color: #333;
+            line-height: 1.6;
+            background: #fff;
+            padding: 40px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        header {
+            text-align: center;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        h1 {
+            font-family: 'Lora', serif;
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+        .tagline {
+            font-style: italic;
+            color: var(--secondary);
+            font-size: 1.1rem;
+        }
+        .target-role {
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--accent);
+            margin-top: 10px;
+            display: block;
+        }
+        section { margin-bottom: 30px; }
+        h2 {
+            font-family: 'Lora', serif;
+            font-size: 1.5rem;
+            color: var(--primary);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+        .project-item { margin-bottom: 20px; }
+        .project-name { font-weight: 700; font-size: 1.2rem; color: #000; }
+        .project-desc { margin-top: 5px; color: #444; }
+        .tech-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .tech-tag {
+            background: #f4f4f4;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--accent);
+        }
+        .strategy {
+            background: #f9f9f9;
+            padding: 15px;
+            border-left: 4px solid var(--primary);
+            font-style: italic;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>{{ tagline }}</h1>
+        <span class="target-role">{{ target_role }}</span>
+        <p class="tagline">Crafted via Protofolio AI Council</p>
+    </header>
+
+    <section id="summary">
+        <h2>Professional Strategy</h2>
+        <p class="strategy">{{ layout_strategy }}</p>
+    </section>
+
+    <section id="projects">
+        <h2>Key Projects</h2>
+        {% for project in projects %}
+        <div class="project-item">
+            <div class="project-name">{{ project.name }}</div>
+            <p class="project-desc">{{ project.description }}</p>
+        </div>
+        {% endfor %}
+    </section>
+
+    <section id="skills">
+        <h2>Technical Expertise</h2>
+        <div class="tech-list">
+            {% for tech in tech_stack %}
+            <span class="tech-tag">{{ tech }}</span>
+            {% endfor %}
+        </div>
+    </section>
+
+    <footer style="text-align: center; margin-top: 50px; font-size: 0.8rem; color: #999;">
+        &copy; 2026 Professional Portfolio | Generated with Protofolio
+    </footer>
+</body>
+</html>

@@ -1,0 +1,13 @@
+execution_duration_ms: 61
+request_preview: '{"context": "Mock context: General developer background with core
+  engineering proficiency.", "user_input": "Software Engineer"}'
+request_time: '2026-04-02T20:21:59.920Z'
+response_preview: '"[MOCK] Marcus here. Versatility is the product. We''ll frame you
+  as the ''Product-Minded Engineer'' who can take a feature from concept to deployment
+  independently."'
+state: OK
+trace_id: tr-b4bd3fa184c6089ce5e785212cb385a2
+trace_location:
+  mlflow_experiment:
+    experiment_id: '193493456913197444'
+  type: MLFLOW_EXPERIMENT

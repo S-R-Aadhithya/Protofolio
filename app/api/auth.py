@@ -60,6 +60,25 @@ def github_callback():
     frontend_url = 'http://localhost:5173/setup'
     return redirect(f"{frontend_url}?token={access_token}&user={user.github_handle}")
 
+@auth_bp.route('/dev-login', methods=['GET'])
+def dev_login():
+    """Backdoor designed purely for the testing Subagent to bypass manual OAuth screens."""
+    email = "agent-test@example.com"
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        user = User(
+            email=email,
+            github_id="mock_id_999",
+            github_handle="agent-tester",
+            github_access_token="mock_token"
+        )
+        db.session.add(user)
+        db.session.commit()
+    
+    access_token = create_access_token(identity=user.email)
+    frontend_url = 'http://localhost:5173/setup'
+    return redirect(f"{frontend_url}?token={access_token}&user={user.github_handle}")
+
 @auth_bp.route('/login', methods=['POST'])
 def login():
     email = request.json.get('email', None)

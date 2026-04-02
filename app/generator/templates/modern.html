@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ tagline }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0b0b0f;
+            --card-bg: #15151e;
+            --accent: #6d28d9;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --border: #26262e;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            color: var(--text-main);
+            padding: 2rem;
+            line-height: 1.5;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        header {
+            padding: 4rem 0;
+            position: relative;
+        }
+        h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 4rem;
+            font-weight: 700;
+            letter-spacing: -2px;
+            line-height: 0.9;
+            background: linear-gradient(to right, #fff, var(--accent));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+        }
+        .meta {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: var(--text-muted);
+        }
+        .tag {
+            padding: 0.25rem 0.75rem;
+            background: var(--accent);
+            color: #fff;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-top: 4rem;
+        }
+        section h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 2px;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        section h2::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+        .project-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            margin-bottom: 1.5rem;
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+        .project-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent);
+        }
+        .project-card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+        .project-card p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        .stack-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .stack-item {
+            padding: 0.5rem 1rem;
+            background: var(--border);
+            border-radius: 0.5rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        .strategy-box {
+            padding: 2rem;
+            border: 1px dashed var(--accent);
+            border-radius: 1.5rem;
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            font-weight: 300;
+        }
+        footer {
+            margin-top: 6rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+            text-align: right;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+        @media (max-width: 768px) {
+            .grid { grid-template-columns: 1fr; }
+            h1 { font-size: 3rem; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="meta">
+            <span class="tag">Persona</span>
+            <span>{{ target_role }}</span>
+        </div>
+        <h1>{{ tagline }}</h1>
+    </header>
+
+    <div class="grid">
+        <section>
+            <h2>Artifacts // Projects</h2>
+            {% for project in projects %}
+            <div class="project-card">
+                <h3>{{ project.name }}</h3>
+                <p>{{ project.description }}</p>
+            </div>
+            {% endfor %}
+        </section>
+
+        <section>
+            <h2>Capability // Stack</h2>
+            <div class="stack-list">
+                {% for tech in tech_stack %}
+                <div class="stack-item">{{ tech }}</div>
+                {% endfor %}
+            </div>
+
+            <h2 style="margin-top: 3rem;">Philosophy</h2>
+            <div class="strategy-box">
+                {{ layout_strategy }}
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        &copy; 2026. GENERATED VIA PROTO_COUNCIL INTERFACE.
+    </footer>
+</body>
+</html>

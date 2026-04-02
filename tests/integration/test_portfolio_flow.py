@@ -1,4 +1,5 @@
 import pytest
+from unittest.mock import MagicMock, patch
 from app.models import User
 
 
@@ -53,3 +54,21 @@ class TestPortfolioGenerationFlow:
     def test_generate_portfolio_unauthenticated(self, client):
         resp = client.post("/api/portfolio/generate", json={"job_goal": "Designer"})
         assert resp.status_code == 401
+
+    def test_generate_portfolio_stream(self, client, auth_headers, app):
+        import app.api.portfolio as portfolio_module
+        
+        mock_gen = MagicMock()
+        mock_gen.return_value = [
+            "data: {\"type\": \"status\", \"agent\": \"Sophia\", \"message\": \"Starting\"}\n\n",
+            "data: {\"type\": \"complete\", \"blueprint\": {\"tagline\": \"Streamed Portfolio\"}}\n\n"
+        ]
+        
+        with patch.object(portfolio_module.engine, 'deliberate_stream', side_effect=mock_gen):
+            resp = client.post("/api/portfolio/generate/stream", json={"job_goal": "Product Manager", "theme": "dark"}, headers=auth_headers)
+            assert resp.status_code == 200
+            assert "text/event-stream" in resp.content_type
+            
+            content = resp.data.decode()
+            assert "Sophia" in content
+            assert "Streamed Portfolio" in content

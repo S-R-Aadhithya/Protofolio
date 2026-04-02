@@ -21,8 +21,33 @@ const PERSONAS = [
 const THEMES = [
   { id: 'dark', name: 'Cyberpunk Dark', accent: '#58a6ff' },
   { id: 'minimal', name: 'Silicon Minimal', accent: '#000000' },
-  { id: 'creative', name: 'Vibrant Creative', accent: '#ff00ff' }
+  { id: 'creative', name: 'Vibrant Creative', accent: '#ff00ff' },
+  { id: 'professional', name: 'Professional', accent: '#2c3e50' },
+  { id: 'modern', name: 'Modern Sleek', accent: '#6d28d9' }
 ]
+
+// IndexedDB Utility
+const initDB = () => {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open('ProtofolioDB', 1)
+    request.onupgradeneeded = (e) => {
+      const db = e.target.result
+      if (!db.objectStoreNames.contains('blueprints')) {
+        db.createObjectStore('blueprints', { keyPath: 'id', autoIncrement: true })
+      }
+    }
+    request.onsuccess = (e) => resolve(e.target.result)
+    request.onerror = (e) => reject(e.target.error)
+  })
+}
+
+const saveBlueprint = async (blueprint) => {
+  const db = await initDB()
+  const tx = db.transaction('blueprints', 'readwrite')
+  const store = tx.objectStore('blueprints')
+  store.add({ ...blueprint, timestamp: new Date().toISOString() })
+  return tx.complete
+}
 
 export default function Generator() {
   const [persona, setPersona] = useState(PERSONAS[0])
@@ -33,10 +58,29 @@ export default function Generator() {
   const [blueprint, setBlueprint] = useState(null)
   const logEndRef = useRef(null)
   const navigate = useNavigate()
+  const iframeRef = useRef(null)
 
   useEffect(() => {
     logEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [logs])
+
+  useEffect(() => {
+    // Attempt to load latest from IndexedDB on mount
+    const loadLatest = async () => {
+      try {
+        const db = await initDB()
+        const tx = db.transaction('blueprints', 'readonly')
+        const store = tx.objectStore('blueprints')
+        const request = store.getAll()
+        request.onsuccess = () => {
+          if (request.result.length > 0) {
+            setBlueprint(request.result[request.result.length - 1])
+          }
+        }
+      } catch (e) { console.error("DB Load Error", e) }
+    }
+    loadLatest()
+  }, [])
 
   const startGeneration = async () => {
     setIsGenerating(true)
@@ -79,6 +123,7 @@ export default function Generator() {
                 }])
               } else if (data.type === 'complete') {
                 setBlueprint(data.blueprint)
+                saveBlueprint(data.blueprint) // Persistent store
               } else if (data.type === 'save_complete') {
                 setResult(data.portfolio_id)
                 setIsGenerating(false)
@@ -98,6 +143,21 @@ export default function Generator() {
   const downloadZip = async () => {
     const token = localStorage.getItem('token')
     window.location.href = `http://localhost:5001/api/portfolio/${result}/export?theme=${theme}&token=${token}`
+  }
+
+  const downloadJSON = () => {
+    const blob = new Blob([JSON.stringify(blueprint, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `resume-blueprint-${persona.replace(/ /g, '-')}.json`
+    a.click()
+  }
+
+  const printResume = () => {
+    if (iframeRef.current) {
+      iframeRef.current.contentWindow.print()
+    }
   }
 
   return (
@@ -167,50 +227,62 @@ export default function Generator() {
       ) : (
         <div className="space-y-8">
           <div className="grid md:grid-cols-3 gap-8">
-            {/* Real-time Logs */}
-            <div className="md:col-span-2 card bg-black/40 border-indigo-500/20 h-[500px] flex flex-col p-0 overflow-hidden">
-              <div className="p-4 border-b border-indigo-500/10 bg-indigo-500/5 flex items-center justify-between">
-                <div className="flex items-center gap-2 text-indigo-400 font-bold">
-                  <Terminal size={18} />
-                  <span>Agent Deliberation Logs</span>
+            {/* Real-time Logs & Live Sandbox */}
+            <div className="md:col-span-2 space-y-8">
+              <div className="card bg-black/40 border-indigo-500/20 h-[300px] flex flex-col p-0 overflow-hidden">
+                <div className="p-4 border-b border-indigo-500/10 bg-indigo-500/5 flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-indigo-400 font-bold">
+                    <Terminal size={18} />
+                    <span>Agent Deliberation Logs</span>
+                  </div>
+                  {isGenerating && <Loader2 size={18} className="animate-spin text-indigo-500" />}
                 </div>
-                {isGenerating && <Loader2 size={18} className="animate-spin text-indigo-500" />}
+                <div className="flex-1 overflow-y-auto p-6 space-y-4 scrollbar-hide">
+                  <AnimatePresence mode='popLayout'>
+                    {logs.map((log, i) => (
+                      <motion.div 
+                        key={i}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="flex gap-4 items-start"
+                      >
+                        <span className="text-[10px] font-mono text-slate-600 mt-1">{log.time}</span>
+                        <div className="space-y-1">
+                          <span className="text-xs font-black uppercase text-indigo-500/80 tracking-tighter">[{log.agent}]</span>
+                          <p className="text-sm text-slate-300 leading-relaxed">{log.message}</p>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                  <div ref={logEndRef} />
+                </div>
               </div>
-              <div className="flex-1 overflow-y-auto p-6 space-y-4 scrollbar-hide">
-                <AnimatePresence mode='popLayout'>
-                  {logs.map((log, i) => (
-                    <motion.div 
-                      key={i}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      className="flex gap-4 items-start"
-                    >
-                      <span className="text-[10px] font-mono text-slate-600 mt-1">{log.time}</span>
-                      <div className="space-y-1">
-                        <span className="text-xs font-black uppercase text-indigo-500/80 tracking-tighter">[{log.agent}]</span>
-                        <p className="text-sm text-slate-300 leading-relaxed">{log.message}</p>
-                      </div>
-                    </motion.div>
-                  ))}
-                  {isGenerating && (
-                    <motion.div 
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="flex gap-4 items-center pl-10"
-                    >
-                      <div className="flex gap-1">
-                        {[0,1,2].map(d => <div key={d} className="w-1 h-1 bg-indigo-500 rounded-full animate-pulse" style={{ animationDelay: `${d * 200}ms` }} />)}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-                <div ref={logEndRef} />
+
+              {/* LIVE SANDBOX */}
+              <div className="card p-0 overflow-hidden border-white/5 bg-[#0a0a0f] h-[600px] relative">
+                <div className="absolute top-4 left-4 z-10 flex gap-2">
+                  <div className="px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-[10px] font-bold border border-white/10 tracking-widest uppercase">Live Sandbox</div>
+                  {isGenerating && <div className="px-3 py-1 bg-indigo-500/20 text-indigo-400 rounded-full text-[10px] font-bold border border-indigo-500/20 uppercase animate-pulse">Rendering...</div>}
+                </div>
+                {result ? (
+                  <iframe 
+                    ref={iframeRef}
+                    src={`http://localhost:5001/api/portfolio/${result}/preview?theme=${theme}`}
+                    className="w-full h-full border-none"
+                    title="Portfolio Preview"
+                  />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center text-slate-700 space-y-4">
+                    <Eye size={48} className="opacity-20" />
+                    <p className="font-medium">Sandbox will activate once blueprint is finalized</p>
+                  </div>
+                )}
               </div>
             </div>
 
             {/* Status & Blueprints */}
             <div className="space-y-4">
-              <div className="card h-full bg-gradient-to-b from-[#16161e] to-black">
+              <div className="card h-fit bg-gradient-to-b from-[#16161e] to-black sticky top-8">
                 <h3 className="font-bold mb-6 flex items-center gap-2">
                   <UserCheck size={18} className="text-emerald-500" />
                   Blueprint Synthesis
@@ -220,8 +292,20 @@ export default function Generator() {
                   <div className="space-y-6">
                     <div className="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
                       <div className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-1">Generated Tagline</div>
-                      <div className="font-bold text-white line-clamp-2">{blueprint.tagline}</div>
+                      <div className="font-bold text-white line-clamp-3">{blueprint.tagline}</div>
                     </div>
+                    
+                    {blueprint.template_dif && (
+                      <div className="p-4 rounded-xl bg-indigo-500/5 border border-indigo-500/20">
+                        <div className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-2 flex items-center gap-1">
+                          <Cpu size={12} /> Visual Diff Applied
+                        </div>
+                        <ul className="text-xs text-slate-400 space-y-1">
+                          {blueprint.template_dif.map((d, i) => <li key={i} className="flex gap-2"><span>•</span> {d}</li>)}
+                        </ul>
+                      </div>
+                    )}
+
                     <div>
                       <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Core Stack</div>
                       <div className="flex flex-wrap gap-2">
@@ -235,18 +319,25 @@ export default function Generator() {
                         className="pt-8 space-y-3"
                       >
                         <button 
-                          onClick={() => window.open(`http://localhost:5001/api/portfolio/${result}/preview?theme=${theme}`, '_blank')}
-                          className="w-full bg-white text-black font-bold h-12 flex items-center justify-center gap-2"
+                          onClick={printResume}
+                          className="w-full bg-white text-black font-bold h-12 flex items-center justify-center gap-2 rounded-xl"
                         >
-                          <Eye size={18} />
-                          Live Preview SPA
+                          <Download size={18} />
+                          Download PDF
+                        </button>
+                        <button 
+                          onClick={downloadJSON}
+                          className="w-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-bold h-12 flex items-center justify-center gap-2 rounded-xl"
+                        >
+                          <Terminal size={18} />
+                          Download JSON
                         </button>
                         <button 
                           onClick={downloadZip}
-                          className="w-full bg-[#26262e] text-white font-bold h-12 flex items-center justify-center gap-2"
+                          className="w-full bg-[#26262e] text-white font-bold h-12 flex items-center justify-center gap-2 rounded-xl"
                         >
                           <Download size={18} />
-                          Export ZIP
+                          Export ZIP Source
                         </button>
                       </motion.div>
                     )}
@@ -254,7 +345,7 @@ export default function Generator() {
                 ) : (
                   <div className="flex flex-col items-center justify-center h-64 text-slate-600">
                     <Layout size={32} className="mb-2 opacity-20" />
-                    <span className="text-sm font-medium">Assembling Blueprint...</span>
+                    <span className="text-sm font-medium text-center">Assembling AI Blueprint from Memory...</span>
                   </div>
                 )}
               </div>

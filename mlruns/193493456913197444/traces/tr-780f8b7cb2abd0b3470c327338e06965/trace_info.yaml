@@ -1,0 +1,24 @@
+execution_duration_ms: 99
+request_preview: '{"content": "Hayden  Smith   \n214 Mitre Avenue , Park Hill, 3045
+  |  04 501 123 456  |  haydensmith@email.com \nPage 1 \n  \n(Tip: Name, m obile number
+  and email address are essential. Current address could be included \nespecially
+  if you live nearby. Ensur e that it is clearly displayed)  \nCareer  Objective  \nI
+  am r eliable hard working Y ear 11 student seeking casual or part -time custo mer
+  service  work  in a \nsports retail environment . Having played soccer for nine
+  years and a keen all-round sports \nenthusiast,  I am looking to contribute knowledge
+  and proven communications skills.  \n (Tip: A career objective isn’t essential ,
+  but it’s useful if you don''t have much experience and can \nconvey enthusiasm and
+  motivation. Briefly summarise any work you have done, your strengths and \nrelevant
+  expertise and state how you aim to apply this to your career goal. Adjust the statement
+  to \nreflect the role yo u are applying for.)   \nAvailability  \nMonday – Friday:
+  4.30pm – 10.00p...'
+request_time: '2026-04-02T19:26:35.561Z'
+response_preview: '"Summary of resume data: Hayden  Smith   \n214 Mitre Avenue , Park
+  Hill, 3045 |  04 501 123 456  |  haydensmith@email.com \nPage 1 \n  \n(Tip: Name,
+  m obile number and email address are essential. Current address could be include..."'
+state: OK
+trace_id: tr-780f8b7cb2abd0b3470c327338e06965
+trace_location:
+  mlflow_experiment:
+    experiment_id: '193493456913197444'
+  type: MLFLOW_EXPERIMENT

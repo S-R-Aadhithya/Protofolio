@@ -1,0 +1,17 @@
+execution_duration_ms: 37
+request_preview: '{"context": "Mock context: General developer background with core
+  engineering proficiency.", "user_input": ["[MOCK] As Tech Lead, I''ve reviewed your
+  goal. A modern Full Stack approach like the T3 stack or Next.js with Prisma and
+  PostgreSQL will show you can handle both ends efficiently.", "[MOCK] Elena here.
+  Balance is key. A consistent design language across the frontend while highlighting
+  the complexity of the integrated features.", "[MOCK] Marcus here. Versatility is
+  the product. We''ll frame you as the ''Product-Minded Engineer'' who can take a
+  feature from concept to deployment independently."]}'
+request_time: '2026-04-02T19:45:15.953Z'
+response_preview: ''
+state: ERROR
+trace_id: tr-3a1b37d59bfd2880ac620edbc52eb9a1
+trace_location:
+  mlflow_experiment:
+    experiment_id: '193493456913197444'
+  type: MLFLOW_EXPERIMENT

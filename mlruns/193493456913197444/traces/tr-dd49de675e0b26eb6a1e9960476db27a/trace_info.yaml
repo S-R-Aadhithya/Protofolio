@@ -1,0 +1,11 @@
+execution_duration_ms: 417
+request_preview: '{"content": "LinkedIn profile: https://linkedin.com/in/hemnathd12",
+  "source_type": "linkedin"}'
+request_time: '2026-04-02T20:09:20.138Z'
+response_preview: '"Summary of linkedin data: LinkedIn profile: https://linkedin.com/in/hemnathd12..."'
+state: OK
+trace_id: tr-dd49de675e0b26eb6a1e9960476db27a
+trace_location:
+  mlflow_experiment:
+    experiment_id: '193493456913197444'
+  type: MLFLOW_EXPERIMENT

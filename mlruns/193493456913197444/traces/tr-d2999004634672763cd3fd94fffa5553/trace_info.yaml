@@ -1,0 +1,11 @@
+execution_duration_ms: 620
+request_preview: '{"content": "PDF parse error: EOF marker not found", "source_type":
+  "resume"}'
+request_time: '2026-04-02T20:00:27.334Z'
+response_preview: '"Summary of resume data: PDF parse error: EOF marker not found..."'
+state: OK
+trace_id: tr-d2999004634672763cd3fd94fffa5553
+trace_location:
+  mlflow_experiment:
+    experiment_id: '193493456913197444'
+  type: MLFLOW_EXPERIMENT

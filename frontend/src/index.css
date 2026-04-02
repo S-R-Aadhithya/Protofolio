@@ -12,13 +12,13 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  --primary: #6366f1;
-  --primary-hover: #4f46e5;
-  --secondary: #ec4899;
-  --bg-dark: #0d0d12;
-  --bg-card: #16161e;
-  --border: #26262e;
-  --text-muted: #94a3b8;
+  --primary: #ffffff;
+  --primary-hover: #e5e5e5;
+  --secondary: #a3a3a3;
+  --bg-dark: #000000;
+  --bg-card: #0a0a0a;
+  --border: #222222;
+  --text-muted: #737373;
 }
 
 body {
@@ -56,7 +56,7 @@ button {
   font-weight: 600;
   font-family: inherit;
   background-color: var(--primary);
-  color: white;
+  color: #000000;
   cursor: pointer;
   transition: all 0.25s ease;
 }
@@ -88,12 +88,12 @@ button:disabled {
 }
 
 .bg-radial {
-  background: radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.15) 0%, rgba(236, 72, 153, 0.05) 50%, transparent 100%);
+  background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 50%, transparent 100%);
   pointer-events: none;
 }
 
 .text-gradient {
-  background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
+  background: linear-gradient(135deg, #ffffff 0%, #a3a3a3 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

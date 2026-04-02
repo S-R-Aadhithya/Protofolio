@@ -1,0 +1,12 @@
+execution_duration_ms: 247
+request_preview: '{"context": "Mock context: General developer background with core
+  engineering proficiency.", "user_input": "Software Engineer"}'
+request_time: '2026-04-02T19:31:09.738Z'
+response_preview: '"[MOCK] Elena here. Balance is key. A consistent design language
+  across the frontend while highlighting the complexity of the integrated features."'
+state: OK
+trace_id: tr-d46d647a196805efa07221bf9e9077c9
+trace_location:
+  mlflow_experiment:
+    experiment_id: '193493456913197444'
+  type: MLFLOW_EXPERIMENT
