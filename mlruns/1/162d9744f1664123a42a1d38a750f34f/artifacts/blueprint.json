@@ -1,0 +1,34 @@
+{
+  "tagline": "Crafting Intuitive Experiences Through Human-Centered Design",
+  "target_role": "Senior UI/UX Designer",
+  "tech_stack": [
+    "Figma",
+    "Adobe XD",
+    "Sketch",
+    "HTML5",
+    "CSS3",
+    "Tailwind CSS",
+    "React.js",
+    "Zeplin"
+  ],
+  "layout_strategy": "A clean, portfolio-first layout with hero, featured projects grid, and skills section.",
+  "projects": [
+    {
+      "name": "E-Commerce Redesign",
+      "description": "Led a full UI overhaul increasing user retention by 35%. Built with Figma components and a design system."
+    },
+    {
+      "name": "Mobile App UX",
+      "description": "Designed end-to-end user flows for a healthcare mobile app. Conducted usability testing with 50+ participants."
+    },
+    {
+      "name": "Design System",
+      "description": "Established a scalable component library used across 5 product lines. Improved design-to-dev handoff speed by 40%."
+    }
+  ],
+  "template_dif": [
+    "Use purple accent color #7c3aed",
+    "Add Figma embed previews to project cards",
+    "Use Inter font family"
+  ]
+}

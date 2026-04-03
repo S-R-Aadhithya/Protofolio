@@ -35,6 +35,17 @@ def create_app(config_name):
         # Create database tables
         db.create_all()
 
+        # Lightweight migration: add any missing columns to existing tables
+        try:
+            with db.engine.connect() as conn:
+                existing = [row[1] for row in conn.execute(db.text("PRAGMA table_info(portfolio)"))]
+                if 'blueprint_json' not in existing:
+                    conn.execute(db.text("ALTER TABLE portfolio ADD COLUMN blueprint_json TEXT"))
+                    conn.commit()
+                    app.logger.info("Migration: added blueprint_json column to portfolio table.")
+        except Exception as e:
+            app.logger.warning(f"Migration check failed (non-critical): {e}")
+
     # Register blueprints
     from .api.auth import auth_bp, oauth
     

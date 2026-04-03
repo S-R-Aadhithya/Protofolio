@@ -24,6 +24,7 @@ class Portfolio(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     title = db.Column(db.String(120))
     target_role = db.Column(db.String(120))
+    blueprint_json = db.Column(db.Text)  # Full AI blueprint stored as JSON string
     github_repo_url = db.Column(db.String(255))
     github_pages_url = db.Column(db.String(255))
     views = db.Column(db.Integer, default=0)

@@ -1,0 +1,23 @@
+execution_duration_ms: 425
+request_preview: '{"content": "Jane Smith\njane.smith@example.com |linkedin.com/in/janesmithUX
+  |dribbble.com/janesmith\nSummary\nHighly creative and data-driven UI/UX Engineer
+  with over 4 years of experience designing intuitive,\naccessible, and stunning digital
+  interfaces. Expert in translating complex user flows into beautiful high-\nfidelity
+  prototypes using Figma. Passionate about bridging the gap between visual design
+  and front-end\nimplementation.\nExperience\nSenior UI/UX Designer Creative Digital
+  Agency (2021 - Present)\n•Spearheaded the entire visual redesign of a flagship e-commerce
+  platform, increasing user retention by\n35% utilizing Figma components and variants.\n•Conducted
+  comprehensive user research, A/B testing, and heuristic evaluations to inform design
+  deci-\nsions and iterate on user flows.\n•Established and maintained a robust scalable
+  Design System in Figma to ensure visual consistency\nacross web and mobile applications.\n•Collaborated
+  directly with frontend React engineers to ...'
+request_time: '2026-04-03T05:44:38.104Z'
+response_preview: '"Summary of resume data: Jane Smith\njane.smith@example.com |linkedin.com/in/janesmithUX
+  |dribbble.com/janesmith\nSummary\nHighly creative and data-driven UI/UX Engineer
+  with over 4 years of experience designing intuitive,\nacces..."'
+state: OK
+trace_id: tr-8117ca648047d02e4d077bea75fac2d1
+trace_location:
+  mlflow_experiment:
+    experiment_id: '827732551592828289'
+  type: MLFLOW_EXPERIMENT
