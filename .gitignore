@@ -104,3 +104,4 @@ coverage.xml
 # =========================
 *.env.docker
 docker-compose.override.yml
+*.pdf
