@@ -18,10 +18,12 @@ class TestAgents:
         assert "Experienced developer" in result
 
     @patch('app.council.agents.ChatGoogleGenerativeAI')
-    def test_chairman_synthesize(self, mock_gemini):
+    @patch('app.council.agents.ChatGroq')
+    def test_chairman_synthesize(self, mock_groq, mock_gemini):
         mock_response = MagicMock()
         mock_response.content = '{"tagline": "AI Expert", "target_role": "ML Engineer", "tech_stack": ["Python"], "projects": [], "layout_strategy": "clean", "template_dif": ["Add neon border"]}'
         mock_gemini.return_value.invoke.return_value = mock_response
+        mock_groq.return_value.invoke.return_value = mock_response
 
         chairman = Chairman()
         result_json = chairman.synthesize("ML Engineer", "Deliberation details")
@@ -30,10 +32,12 @@ class TestAgents:
         assert "template_dif" in result_json
 
     @patch('app.council.agents.ChatGoogleGenerativeAI')
-    def test_base_agent_get_opinion(self, mock_gemini):
+    @patch('app.council.agents.ChatGroq')
+    def test_base_agent_get_opinion(self, mock_groq, mock_gemini):
         mock_response = MagicMock()
         mock_response.content = "I think we should use React."
         mock_gemini.return_value.invoke.return_value = mock_response
+        mock_groq.return_value.invoke.return_value = mock_response
 
         tech_lead = TechLead()
         opinion = tech_lead.get_opinion("User context", "Software Engineer")
