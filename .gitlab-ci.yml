@@ -24,14 +24,19 @@ cache:
 install-deps:
   stage: setup
   script:
+    - python -m venv venv
+    - source venv/bin/activate
     - pip install --upgrade pip
-    - pip install -r requirements.txt mlflow optuna
-    - pip install flake8 black bandit pytest pytest-cov
+    - pip install -r requirements.txt mlflow optuna flake8 black bandit pytest pytest-cov
+  artifacts:
+    paths:
+      - venv/
+    expire_in: 1 hour
 
 lint-code:
   stage: lint
   script:
-    - pip install flake8 black
+    - source venv/bin/activate
     - echo "Running Black constraint check..."
     - black --check app tests || echo "Black formatting issues found"
     - echo "Running Flake8..."
@@ -41,7 +46,7 @@ lint-code:
 security-scan:
   stage: security
   script:
-    - pip install bandit
+    - source venv/bin/activate
     - echo "Running Bandit for security vulnerabilities..."
     - bandit -r app/ -ll -ii || echo "Bandit found potential security issues"
   allow_failure: true
@@ -49,7 +54,7 @@ security-scan:
 unit-tests:
   stage: unit-test
   script:
-    - pip install -r requirements.txt pytest pytest-cov mlflow optuna
+    - source venv/bin/activate
     - echo "Running Unit Tests..."
     - pytest tests/unit/ -v --tb=short --cov=app --cov-report=term-missing --cov-report=xml
   coverage: '/TOTAL.*\s+(\d+%)$/'
@@ -63,14 +68,14 @@ unit-tests:
 integration-tests:
   stage: integration-test
   script:
-    - pip install -r requirements.txt pytest mlflow optuna
+    - source venv/bin/activate
     - echo "Running Integration Tests..."
     - pytest tests/integration/ -v --tb=short
 
 run-experiments:
   stage: experiments
   script:
-    - pip install -r requirements.txt mlflow optuna
+    - source venv/bin/activate
     - echo "Iterating experiments..."
     - python run_experiments.py
   allow_failure: true
@@ -81,7 +86,7 @@ run-experiments:
 run-optuna-tuning:
   stage: experiments
   script:
-    - pip install -r requirements.txt mlflow optuna
+    - source venv/bin/activate
     - echo "Running parameter tuning..."
     - python optuna_tuner.py --trials 5
   allow_failure: true
