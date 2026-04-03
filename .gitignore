@@ -109,3 +109,9 @@ docker-compose.override.yml
 # =========================
 ml_experiments/mlruns/
 ml_experiments/mlflow.db
+
+# =========================
+# Output - ZIP backup
+# =========================
+*.zip
+output/
