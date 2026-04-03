@@ -5,6 +5,8 @@ from unittest.mock import MagicMock
 
 # Set dummy key for tests to avoid pydantic validation errors in LangChain
 os.environ.setdefault("GEMINI_API_KEY", "your_gemini_api_key_dummy")
+os.environ.setdefault("GROQ_API_KEY", "your_groq_api_key_dummy")
+os.environ.setdefault("GOOGLE_API_KEY", "your_google_api_key_dummy")
 
 
 from app import create_app
