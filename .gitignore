@@ -4,7 +4,6 @@
 venv/
 env/
 ENV/
-gitlab-op/
 .venv/
 .env/
 venv.bak/
