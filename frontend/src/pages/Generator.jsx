@@ -56,6 +56,7 @@ export default function Generator() {
   const [logs, setLogs] = useState([])
   const [result, setResult] = useState(null)
   const [blueprint, setBlueprint] = useState(null)
+  const [htmlPreview, setHtmlPreview] = useState("")
   const logEndRef = useRef(null)
   const navigate = useNavigate()
   const iframeRef = useRef(null)
@@ -81,6 +82,19 @@ export default function Generator() {
     }
     loadLatest()
   }, [])
+
+  useEffect(() => {
+    if (result) {
+      const token = localStorage.getItem('token')
+      axios.get(`http://localhost:5001/api/portfolio/${result}/preview?theme=${theme}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      .then(res => setHtmlPreview(res.data.html || ""))
+      .catch(err => console.error("Failed to fetch preview HTML:", err))
+    } else {
+      setHtmlPreview("")
+    }
+  }, [result, theme])
 
   const startGeneration = async () => {
     setIsGenerating(true)
@@ -155,9 +169,14 @@ export default function Generator() {
   }
 
   const printResume = () => {
-    if (iframeRef.current) {
-      iframeRef.current.contentWindow.print()
-    }
+    if (!htmlPreview) return;
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(htmlPreview);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => {
+      printWindow.print();
+    }, 500);
   }
 
   return (
@@ -265,12 +284,9 @@ export default function Generator() {
                   {isGenerating && <div className="px-3 py-1 bg-indigo-500/20 text-indigo-400 rounded-full text-[10px] font-bold border border-indigo-500/20 uppercase animate-pulse">Rendering...</div>}
                 </div>
                 {result ? (
-                  <iframe 
-                    ref={iframeRef}
-                    src={`http://localhost:5001/api/portfolio/${result}/preview?theme=${theme}`}
-                    className="w-full h-full border-none"
-                    title="Portfolio Preview"
-                  />
+                  <pre className="w-full h-full p-8 pt-16 overflow-auto text-emerald-400 font-mono text-sm scrollbar-hide">
+                    {JSON.stringify(blueprint, null, 2)}
+                  </pre>
                 ) : (
                   <div className="w-full h-full flex flex-col items-center justify-center text-slate-700 space-y-4">
                     <Eye size={48} className="opacity-20" />
@@ -292,7 +308,7 @@ export default function Generator() {
                   <div className="space-y-6">
                     <div className="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
                       <div className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-1">Generated Tagline</div>
-                      <div className="font-bold text-white line-clamp-3">{blueprint.tagline}</div>
+                      <div className="font-bold text-white text-pretty mb-1">{blueprint.tagline}</div>
                     </div>
                     
                     {blueprint.template_dif && (
@@ -318,6 +334,16 @@ export default function Generator() {
                         animate={{ opacity: 1, y: 0 }}
                         className="pt-8 space-y-3"
                       >
+                        <button 
+                          onClick={() => {
+                            const token = localStorage.getItem('token')
+                            window.open(`http://localhost:5001/api/portfolio/${result}/preview?theme=${theme}&token=${token}&raw=true`, '_blank')
+                          }}
+                          className="w-full bg-indigo-500 hover:bg-indigo-600 transition-colors text-white font-bold h-12 flex items-center justify-center gap-2 rounded-xl"
+                        >
+                          <Eye size={18} />
+                          Review Live HTML
+                        </button>
                         <button 
                           onClick={printResume}
                           className="w-full bg-white text-black font-bold h-12 flex items-center justify-center gap-2 rounded-xl"

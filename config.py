@@ -10,6 +10,8 @@ class Config:
     JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'my_precious_jwt_secret_key')
     from datetime import timedelta
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=int(os.getenv('JWT_EXPIRATION_HOURS', 24)))
+    JWT_TOKEN_LOCATION = ['headers', 'query_string']
+    JWT_QUERY_STRING_NAME = 'token'
     
     CORS_ALLOWED_ORIGINS = os.getenv('ALLOWED_ORIGINS', 'http://localhost:3000,http://localhost:5173').split(',')
     

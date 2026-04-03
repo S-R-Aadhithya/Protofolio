@@ -64,9 +64,9 @@ def run_test():
             css_content = render_data.get("css", "")
             
             os.makedirs("output", exist_ok=True)
-            with open("output/index.html", "w") as f:
+            with open("output/index.html", "w", encoding="utf-8") as f:
                 f.write(html_content)
-            with open("output/styles.css", "w") as f:
+            with open("output/styles.css", "w", encoding="utf-8") as f:
                 f.write(css_content)
                 
             print(f"\n[!] Success: I have saved your finalized code directly to:")

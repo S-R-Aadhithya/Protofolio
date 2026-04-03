@@ -5,16 +5,9 @@ import { useSearchParams } from 'react-router-dom'
 
 export default function Setup() {
   const [loading, setLoading] = useState(null)
-  const [status, setStatus] = useState(() => {
-    const saved = localStorage.getItem('ingest_status')
-    return saved ? JSON.parse(saved) : {}
-  })
+  const [status, setStatus] = useState({})
   const [searchParams, setSearchParams] = useSearchParams()
   const token = localStorage.getItem('token')
-
-  useEffect(() => {
-    localStorage.setItem('ingest_status', JSON.stringify(status))
-  }, [status])
 
   useEffect(() => {
     const newToken = searchParams.get('token')
@@ -133,6 +126,7 @@ export default function Setup() {
             <input 
               name="linkedinUrl" 
               placeholder="https://linkedin.com/in/..." 
+              autoComplete="off"
               required
               className="flex-1 bg-white/5 border-white/10 mb-0"
             />

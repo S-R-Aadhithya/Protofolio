@@ -324,6 +324,7 @@
         <a href="#hero" class="logo">Portfolio</a>
         <ul class="nav-links">
             <li><a href="#about">About</a></li>
+            <li><a href="#experience">Experience</a></li>
             <li><a href="#projects">Projects</a></li>
             <li><a href="#skills">Skills</a></li>
             <li><a href="#contact">Contact</a></li>
@@ -346,6 +347,22 @@
         <p class="section-label">Strategy</p>
         <h2 class="section-title">Approach & Philosophy</h2>
         <p class="about-text">{{ layout_strategy }}</p>
+    </div>
+</section>
+
+<section id="experience">
+    <div class="container">
+        <p class="section-label">Career</p>
+        <h2 class="section-title">Work Experience</h2>
+        <div class="projects-grid">
+            {% for job in work_experience %}
+            <div class="project-card">
+                <p class="section-label" style="margin-bottom: 0.2rem;">{{ job.company }}</p>
+                <h3>{{ job.role }}</h3>
+                <p>{{ job.description }}</p>
+            </div>
+            {% endfor %}
+        </div>
     </div>
 </section>
 

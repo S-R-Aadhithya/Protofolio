@@ -27,7 +27,10 @@ ingest_bp = Blueprint('ingest', __name__)
 @ingest_bp.route('/resume', methods=['POST'])
 @jwt_required()
 def upload_resume():
-    current_user = get_jwt_identity()
+    current_user_email = get_jwt_identity()
+    user = User.query.filter_by(email=current_user_email).first()
+    if not user: return jsonify({"error": "User not found"}), 404
+    
     if 'file' not in request.files:
         return jsonify({"error": "No file part"}), 400
     file = request.files['file']
@@ -48,7 +51,7 @@ def upload_resume():
     structured_summary = chairman.process_ingestion(extracted_text, source_type="resume")
 
     mgr = MemoryManager()
-    mgr.add_fact(user_id=current_user, content=structured_summary)
+    mgr.add_fact(user_id=current_user_email, content=structured_summary)
 
     return jsonify({"message": "Resume parsed and added to AI memory.", "extracted_text": extracted_text}), 200
 
@@ -155,11 +158,12 @@ def fetch_github():
 @ingest_bp.route('/job-goal', methods=['POST'])
 @jwt_required()
 def set_job_goal():
-    current_user = get_jwt_identity()
+    current_user_email = get_jwt_identity()
+    user = User.query.filter_by(email=current_user_email).first()
     goal = request.json.get('jobGoal')
 
     mgr = MemoryManager()
-    mgr.add_fact(user_id=current_user, content=f"My target job role is: {goal}")
+    mgr.add_fact(user_id=current_user_email, content=f"My target job role is: {goal}")
 
     return jsonify({"message": "Job goal updated and saved to AI memory", "goal": goal}), 200
 

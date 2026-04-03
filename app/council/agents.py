@@ -147,24 +147,25 @@ class Chairman(BaseAgent):
         super().__init__("Sophia", "Council Chairman", model=model, temperature=temperature)
 
     @mlflow.trace
-    def synthesize(self, user_input, deliberations):
+    def synthesize(self, user_input, deliberations, context=""):
         """Stage 3: Final synthesis into a concrete JSON blueprint."""
         system_msg = """You are Sophia, the Council Chairman. Based on the deliberations below, produce a final portfolio blueprint as STRICT JSON.
 
 You MUST output ONLY a raw JSON object (no markdown, no ```json blocks, no explanation). The JSON must contain ALL of these keys:
 - "tagline": A specific, compelling 1-sentence headline for this exact person (NOT generic).
 - "target_role": Their professional title.
-- "tech_stack": A non-empty list of 6-10 specific tools/technologies this person actually uses (e.g. ["Figma", "Adobe XD", "HTML5", "CSS3", "React"]).
-- "projects": A non-empty list of 3 objects, each with "name" (real project title) and "description" (2-sentence impact-focused description).
+- "tech_stack": A list of up to 10 specific tools. Do not invent a tech stack. Only list tools explicitly mentioned in the context. If none are found, return ["HTML", "CSS", "JavaScript"].
+- "work_experience": Extracted directly from the provided user memory/resume. A list of up to 4 objects, each with "company", "role", and "description" (1-2 sentences). ABSOLUTELY CRITICAL: If the provided Memory Context does not explicitly list real company names for work experience, YOU MUST RETURN AN EMPTY LIST []. NEVER invent names like 'ABC Corporation', 'GHI Inc.', or 'DEF Startups'.
+- "projects": A list of up to 3 objects. Extracted directly from the provided memory. If the provided Memory Context does not list real projects, YOU MUST RETURN AN EMPTY LIST []. NEVER invent fake project names or dummy companies.
 - "layout_strategy": A 2-3 sentence description of the page layout and design philosophy for this person's portfolio.
 - "template_dif": A list of 3-5 specific CSS/HTML tweaks (e.g. "Use purple accent color #7c3aed").
 
-Do NOT use placeholder names like 'Project A'. Use real, domain-specific project names based on the deliberations."""
+Do NOT use placeholder names. Use real, domain-specific project and company names based purely on the memory context. If they are missing, omit them."""
         prompt = ChatPromptTemplate.from_messages([
             ("system", system_msg),
-            ("human", "User Goal: {user_input}\n\nDeliberations:\n{deliberations}\n\nOutput ONLY the JSON object.")
+            ("human", "User Goal: {user_input}\n\nMemory Context (Use this for tech_stack and work_experience):\n{context}\n\nDeliberations:\n{deliberations}\n\nOutput ONLY the JSON object.")
         ])
-        messages = prompt.format_messages(user_input=user_input, deliberations=deliberations)
+        messages = prompt.format_messages(user_input=user_input, deliberations=deliberations, context=context)
 
         def mock_synthesis():
             import random
@@ -186,6 +187,7 @@ Do NOT use placeholder names like 'Project A'. Use real, domain-specific project
                 "target_role": user_input,
                 "tech_stack": stack,
                 "layout_strategy": "A clean, portfolio-first layout with hero, featured projects grid, and skills section.",
+                "work_experience": [],
                 "projects": [
                     {"name": "E-Commerce Redesign", "description": "Led a full UI overhaul increasing user retention by 35%. Built with Figma components and a design system."},
                     {"name": "Mobile App UX", "description": "Designed end-to-end user flows for a healthcare mobile app. Conducted usability testing with 50+ participants."},

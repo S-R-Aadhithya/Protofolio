@@ -24,7 +24,7 @@ def generate():
     job_goal = data.get('job_goal', None)  # None = auto-infer from resume
     theme = data.get('theme', 'dark')
 
-    result = engine.deliberate(user.id, job_goal)
+    result = engine.deliberate(user_email, job_goal)
     blueprint = result['blueprint']
     # Use the inferred/provided goal for DB storage
     effective_goal = result.get('inferred_goal', job_goal) or 'Auto-Generated Portfolio'
@@ -73,7 +73,7 @@ def generate_stream():
 
     def event_stream():
         final_blueprint = None
-        for chunk in engine.deliberate_stream(user.id, job_goal):
+        for chunk in engine.deliberate_stream(user_email, job_goal):
             yield chunk
             if chunk.startswith("data: ") and "complete" in chunk:
                 try:
@@ -88,7 +88,8 @@ def generate_stream():
             new_portfolio = Portfolio(
                 user_id=user.id,
                 title=final_blueprint.get('tagline', f"Professional {job_goal} Portfolio"),
-                target_role=job_goal
+                target_role=job_goal,
+                blueprint_json=json.dumps(final_blueprint)
             )
             db.session.add(new_portfolio)
             db.session.flush()
@@ -155,6 +156,10 @@ def preview_portfolio(id):
     blueprint['theme'] = theme
 
     rendered = renderer.render(blueprint, theme=theme, portfolio_id=id)
+    
+    if request.args.get('raw') == 'true':
+        return Response(rendered["html"], mimetype='text/html')
+
     return jsonify({
         "portfolio_id": id,
         "theme": theme,

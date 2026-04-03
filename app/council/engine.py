@@ -159,7 +159,7 @@ class CouncilEngine:
                 deliberation_history += f"PM Review: {reviews[2]}\n\n"
 
                 # Stage 3: Synthesis
-                final_blueprint_str = self.chairman.synthesize(user_input, deliberation_history)
+                final_blueprint_str = self.chairman.synthesize(user_input, deliberation_history, context=context)
 
             latency = time.time() - start_time
 
@@ -274,7 +274,7 @@ class CouncilEngine:
                     deliberation_history += f"Agent {i} Review: {r}\n\n"
 
                 yield f"data: {json.dumps({'type': 'status', 'agent': 'Chairman', 'message': 'Synthesizing final blueprint...'})}\n\n"
-                final_blueprint_str = self.chairman.synthesize(user_input, deliberation_history)
+                final_blueprint_str = self.chairman.synthesize(user_input, deliberation_history, context=context)
 
             try:
                 json_str = final_blueprint_str

@@ -1,0 +1,41 @@
+{
+  "tagline": "Expert Data Engineer for High-Performance Systems",
+  "target_role": "Senior Software Engineer",
+  "tech_stack": [
+    "Apache Spark",
+    "Scala",
+    "Java",
+    "Python",
+    "MySQL",
+    "PostgreSQL",
+    "MongoDB",
+    "Node.js",
+    "Express.js",
+    "Flask",
+    "Scikit-learn",
+    "TensorFlow",
+    "PyTorch"
+  ],
+  "projects": [
+    {
+      "name": "Real-time Data Pipeline with Spark",
+      "description": "Designed and implemented a real-time data pipeline using Apache Spark, handling high-volume data streams from various sources (e.g., logs, IoT devices). Utilize Spark's in-memory computing capabilities to process data in real-time, implement data aggregation and filtering techniques to optimize performance, and showcase data processing speed and scalability using benchmarking tools."
+    },
+    {
+      "name": "Optimizing Data Retrieval with Indexing and Caching",
+      "description": "Analyzed and optimized database queries using indexing and caching techniques to improve data retrieval performance. Designed and implemented efficient indexing strategies to reduce query latency, utilized caching mechanisms (e.g., Redis, Memcached) to minimize database queries, and showcased query optimization results using Explain plans and benchmarking tools."
+    },
+    {
+      "name": "Machine Learning Pipeline with Model Validation",
+      "description": "Developed a machine learning pipeline using Spark MLlib, focusing on model evaluation and validation techniques to ensure data-driven decision-making. Designed and implemented a machine learning pipeline using Spark MLlib, utilized model validation techniques (e.g., cross-validation, metric-based validation), and showcased model performance using visualization tools."
+    }
+  ],
+  "layout_strategy": "A clean, responsive design that adapts to various screen sizes and devices, with a clear visual hierarchy using headings, subheadings, and whitespace to guide the user through the portfolio. The portfolio will consist of a home page, projects section, blog, and contact section, with a focus on showcasing expertise in high-performance API development, database optimization, and data engineering with Spark.",
+  "template_dif": [
+    "Use purple accent color #7c3aed",
+    "Customize font family to Open Sans",
+    "Utilize high-quality images or graphics related to data engineering, Spark, or high-performance systems",
+    "Include step-by-step explanations and diagrams to illustrate the thought process and design decisions",
+    "Highlight experience with Spark, data engineering, and model evaluation in the portfolio description"
+  ]
+}
