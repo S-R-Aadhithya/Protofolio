@@ -12,6 +12,9 @@ stages:
 variables:
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
   PYTHONPATH: "$CI_PROJECT_DIR"
+  GROQ_API_KEY: "dummy_key_for_tests"
+  GOOGLE_API_KEY: "dummy_key_for_tests"
+  MLFLOW_TRACKING_URI: "sqlite:///mlflow.db"
 
 cache:
   key:
@@ -80,7 +83,7 @@ run-experiments:
   allow_failure: true
   artifacts:
     paths:
-      - mlruns/
+      - mlflow.db
 
 run-optuna-tuning:
   stage: experiments
@@ -91,7 +94,7 @@ run-optuna-tuning:
   allow_failure: true
   artifacts:
     paths:
-      - mlruns/
+      - mlflow.db
   variables:
     GIT_PYTHON_REFRESH: quiet
 
