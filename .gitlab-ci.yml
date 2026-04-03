@@ -12,6 +12,7 @@ stages:
 variables:
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
   PYTHONPATH: "$CI_PROJECT_DIR"
+  GROQ_API_KEY: "dummy_key_for_tests"
 
 cache:
   key:
