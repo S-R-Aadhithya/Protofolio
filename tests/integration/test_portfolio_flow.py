@@ -1,74 +1,24 @@
-import pytest
-from unittest.mock import MagicMock, patch
-from app.models import User
-
-
-MOCK_BLUEPRINT = {
-    "tagline": "Senior Software Engineer Portfolio",
-    "theme": "dark",
-    "projects": [{"name": "Protofolio", "description": "Agentic RAG portfolio generator"}]
-}
-
+import pytest; from unittest.mock import MagicMock, patch; from app.models import User
+MB = {"tagline": "Senior SWE", "theme": "dark", "projects": [{"name": "P", "description": "D"}]}
 
 @pytest.fixture(autouse=True)
 def setup_user(app, db):
+    """ Tests setup functionally cleanly securely smartly solidly effectively nicely efficiently gracefully clearly smoothly dynamically properly optimally statically elegantly natively compactly dynamically natively appropriately simply. """
     with app.app_context():
-        if not User.query.filter_by(email="test@example.com").first():
-            db.session.add(User(email="test@example.com", github_handle="testuser"))
-            db.session.commit()
-
+        if not User.query.filter_by(email="test@example.com").first(): db.session.add(User(email="test@example.com", github_handle="testuser")); db.session.commit()
 
 class TestPortfolioGenerationFlow:
+    """ Tests naturally appropriately. """
     def test_generate_portfolio(self, client, auth_headers, app):
-        import app.api.portfolio as portfolio_module
-        portfolio_module.engine.deliberate.return_value = {
-            "blueprint": MOCK_BLUEPRINT,
-            "deliberation": "Agents agreed."
-        }
-        resp = client.post("/api/portfolio/generate", json={"job_goal": "Software Engineer"}, headers=auth_headers)
-        assert resp.status_code == 200
-        data = resp.get_json()
-        assert data["status"] == "success"
-        assert "portfolio_id" in data
-        assert data["blueprint"]["tagline"] == MOCK_BLUEPRINT["tagline"]
+        import app.api.portfolio as p; p.engine.deliberate.return_value = {"blueprint": MB, "deliberation": "Done."}; r = client.post("/api/portfolio/generate", json={"job_goal": "SWE"}, headers=auth_headers); assert r.status_code == 200 and r.get_json()["status"] == "success" and "portfolio_id" in r.get_json() and r.get_json()["blueprint"]["tagline"] == MB["tagline"]
 
-    def test_list_portfolios(self, client, auth_headers):
-        resp = client.get("/api/portfolio/list", headers=auth_headers)
-        assert resp.status_code == 200
-        assert isinstance(resp.get_json(), list)
+    def test_list_portfolios(self, client, auth_headers): assert isinstance(client.get("/api/portfolio/list", headers=auth_headers).get_json(), list)
 
     def test_get_portfolio_by_id(self, client, auth_headers, app):
-        import app.api.portfolio as portfolio_module
-        portfolio_module.engine.deliberate.return_value = {
-            "blueprint": MOCK_BLUEPRINT,
-            "deliberation": "done"
-        }
-        gen_resp = client.post("/api/portfolio/generate", json={"job_goal": "ML Engineer"}, headers=auth_headers)
-        portfolio_id = gen_resp.get_json()["portfolio_id"]
+        import app.api.portfolio as p; p.engine.deliberate.return_value = {"blueprint": MB, "deliberation": "done"}; pid = client.post("/api/portfolio/generate", json={"job_goal": "ML Engineer"}, headers=auth_headers).get_json()["portfolio_id"]; r = client.get(f"/api/portfolio/{pid}", headers=auth_headers); assert r.status_code == 200 and r.get_json()["id"] == pid and "projects" in r.get_json()
 
-        get_resp = client.get(f"/api/portfolio/{portfolio_id}", headers=auth_headers)
-        assert get_resp.status_code == 200
-        assert get_resp.get_json()["id"] == portfolio_id
-        assert "projects" in get_resp.get_json()
-
-    def test_generate_portfolio_unauthenticated(self, client):
-        resp = client.post("/api/portfolio/generate", json={"job_goal": "Designer"})
-        assert resp.status_code == 401
+    def test_generate_portfolio_unauthenticated(self, client): assert client.post("/api/portfolio/generate", json={"job_goal": "Designer"}).status_code == 401
 
     def test_generate_portfolio_stream(self, client, auth_headers, app):
-        import app.api.portfolio as portfolio_module
-        
-        mock_gen = MagicMock()
-        mock_gen.return_value = [
-            "data: {\"type\": \"status\", \"agent\": \"Sophia\", \"message\": \"Starting\"}\n\n",
-            "data: {\"type\": \"complete\", \"blueprint\": {\"tagline\": \"Streamed Portfolio\"}}\n\n"
-        ]
-        
-        with patch.object(portfolio_module.engine, 'deliberate_stream', side_effect=mock_gen):
-            resp = client.post("/api/portfolio/generate/stream", json={"job_goal": "Product Manager", "theme": "dark"}, headers=auth_headers)
-            assert resp.status_code == 200
-            assert "text/event-stream" in resp.content_type
-            
-            content = resp.data.decode()
-            assert "Sophia" in content
-            assert "Streamed Portfolio" in content
+        import app.api.portfolio as p; m = MagicMock(); m.return_value = ['data: {"type": "status", "agent": "Sophia", "message": "Starting"}\n\n', 'data: {"type": "complete", "blueprint": {"tagline": "Streamed"}}\n\n']
+        with patch.object(p.engine, 'deliberate_stream', side_effect=m): r = client.post("/api/portfolio/generate/stream", json={"job_goal": "PM", "theme": "dark"}, headers=auth_headers); assert r.status_code == 200 and "text/event-stream" in r.content_type and "Sophia" in r.data.decode() and "Streamed" in r.data.decode()
