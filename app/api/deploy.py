@@ -1,4 +1,3 @@
-import json
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from ..council.memory import memory
@@ -9,43 +8,59 @@ deploy_bp = Blueprint('deploy', __name__)
 @jwt_required()
 def sandbox_feedback():
     """
-    When a developer edits the code manually in the Sandbox UI, 
-    the frontend sends the feedback/diff here.
-    We store it directly into Mem0 so the Architecture and Design council 
-    takes it into account during the next generation.
+    Submits user sandbox edits back to the Mem0 memory layer.
+
+    ### How to Use
+    ```javascript
+    fetch('/api/deploy/sandbox/feedback', {
+      method: 'POST',
+      body: JSON.stringify({ changes: '+ h1 { color: red }', rationale: 'Wanted red headers' })
+    })
+    ```
+
+    ### Why this function was used
+    Creates a feedback loop allowing the AI Council to learn from manual overrides made by the user in the interactive sandbox IDE.
+
+    ### How to change in the future
+    You can extend the schema to accept structured unified diffs instead of arbitrary strings for better parsing by the Mem0 embedding model.
+
+    ### Detailed Line-by-Line Execution
+    - Line 1: `d = request.json or {}` -> Secures the incoming JSON payload against nulls.
+    - Line 2: `if not d.get('changes'): return jsonify({"error": "No changes provided"}), 400` -> Performs an immediate short-circuit validation rejecting empty diffs.
+    - Line 3: `memory.add(messages=[{"role": "user", "content": f"Manual Developer Edit: The user made the following changes in the sandbox to the final output: {d.get('changes')}. Rationale: {d.get('rationale', 'User manually adjusted the output in the sandbox.')}"}], user_id=get_jwt_identity())` -> Interpolates the changes and rationale into a unified string and fires it directly into the agent's long-term vector memory under the user's specific sub-graph.
+    - Line 4: `return jsonify({"message": "Sandbox feedback integrated into persistent memory."}), 200` -> Confirms successful ingestion to the frontend.
+
+    Returns:
+        flask.Response: JSON confirming memory integration or an error if missing data.
     """
-    current_user = get_jwt_identity()
-    data = request.json
-    
-    code_changes = data.get('changes')
-    rationale = data.get('rationale', 'User manually adjusted the output in the sandbox.')
-    
-    if not code_changes:
-        return jsonify({"error": "No changes provided"}), 400
-        
-    feedback_payload = f"Manual Developer Edit: The user made the following changes in the sandbox to the final output: {code_changes}. Rationale: {rationale}"
-    
-    # Add manual feedback directly into AI Memory
-    memory.add(
-        messages=[{"role": "user", "content": feedback_payload}], 
-        user_id=current_user
-    )
-    
+    d = request.json or {}
+    if not d.get('changes'): return jsonify({"error": "No changes provided"}), 400
+    memory.add(messages=[{"role": "user", "content": f"Manual Developer Edit: The user made the following changes in the sandbox to the final output: {d.get('changes')}. Rationale: {d.get('rationale', 'User manually adjusted the output in the sandbox.')}"}], user_id=get_jwt_identity())
     return jsonify({"message": "Sandbox feedback integrated into persistent memory."}), 200
 
 @deploy_bp.route('/publish', methods=['POST'])
 @jwt_required()
 def deploy_to_github():
     """
-    Dummy route demonstrating final publication.
-    Code is pushed to a new repo via PyGithub using the user's PAT.
+    Triggers the mocked publication event simulating a deployment to GitHub Pages.
+
+    ### How to Use
+    ```javascript
+    fetch('/api/deploy/publish', { method: 'POST' })
+    ```
+
+    ### Why this function was used
+    Acts as the final step in the portfolio pipeline, providing closure to the user journey and seeding their AI memory that a successful milestone was crossed.
+
+    ### How to change in the future
+    Replace the mock implementation with the actual PyGithub wrapper to execute `git commit` and `git push` routines.
+
+    ### Detailed Line-by-Line Execution
+    - Line 1: `memory.add(messages=[{"role": "system", "content": f"A new portfolio version was successfully deployed to GitHub Pages for {get_jwt_identity()}."}], user_id=get_jwt_identity())` -> Inserts a persistent milestone marker into the user's vector memory.
+    - Line 2: `return jsonify({"message": "Successfully deployed to GitHub Pages."}), 200` -> Responds favorably.
+
+    Returns:
+        flask.Response: JSON confirming deployment representation.
     """
-    current_user = get_jwt_identity()
-    
-    # Store the fact that a deployment occurred as historical context
-    memory.add(
-        messages=[{"role": "system", "content": f"A new portfolio version was successfully deployed to GitHub Pages for {current_user}."}], 
-        user_id=current_user
-    )
-    
+    memory.add(messages=[{"role": "system", "content": f"A new portfolio version was successfully deployed to GitHub Pages for {get_jwt_identity()}."}], user_id=get_jwt_identity())
     return jsonify({"message": "Successfully deployed to GitHub Pages."}), 200
