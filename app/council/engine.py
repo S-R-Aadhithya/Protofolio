@@ -33,17 +33,56 @@ class CouncilEngine:
             score += min(40, num_projects * 20)
         return score
 
+    def _infer_goal(self, user_id):
+        """
+        Use an LLM to read the user's resume context from memory and
+        automatically determine the best career goal for their portfolio.
+        Falls back to a generic goal if inference fails.
+        """
+        print("DEBUG: No goal provided — inferring from resume context...")
+        # Pull a broad context snapshot from memory
+        context = self.memory.retrieve_chunks(user_id, "professional experience skills career background")
+        if not context or len(context) < 20:
+            print("DEBUG: No memory context found, using generic goal.")
+            return "Software Engineer"
+
+        try:
+            from langchain_groq import ChatGroq
+            from langchain_core.prompts import ChatPromptTemplate
+            groq_keys = [v for k, v in os.environ.items() if k.startswith("GROQ_API_KEY")]
+            api_key = groq_keys[0] if groq_keys else None
+            llm = ChatGroq(model="llama-3.1-8b-instant", temperature=0.3, api_key=api_key)
+            prompt = ChatPromptTemplate.from_messages([
+                ("system", (
+                    "You are a career advisor. Based on the resume context below, "
+                    "write a single concise career goal sentence (10-20 words) that best represents "
+                    "what this person is targeting as their next role. "
+                    "Output ONLY the goal sentence, nothing else."
+                )),
+                ("human", "Resume Context:\n{context}")
+            ])
+            response = llm.invoke(prompt.format_messages(context=context))
+            goal = response.content.strip().strip('"').strip("'")
+            print(f"DEBUG: Inferred goal: {goal}")
+            return goal
+        except Exception as e:
+            print(f"WARNING: Goal inference failed: {e}. Using generic fallback.")
+            return "Senior Software Engineer"
+
     @mlflow.trace(name="Council Deliberation Pipeline")
-    def deliberate(self, user_id, user_input, agent_config=None):
+    def deliberate(self, user_id, user_input=None, agent_config=None):
         """
         Run a full council deliberation.
 
         Args:
             user_id: Unique user identifier for memory retrieval.
-            user_input: The user's portfolio goal.
+            user_input: The portfolio goal. If None, it is automatically inferred from the resume.
             agent_config (dict, optional): Hyperparameter overrides for Optuna tuning.
-                Keys: 'temperature' (float), 'model' (str)
         """
+        # Auto-infer the goal from the resume if not provided
+        if not user_input:
+            user_input = self._infer_goal(user_id)
+
         print(f"DEBUG: Starting deliberation for user {user_id} with goal: {user_input}")
 
         # Apply agent_config overrides (used by Optuna tuner)
@@ -91,18 +130,22 @@ class CouncilEngine:
 
             with get_openai_callback() as cb:
                 # Stage 1: Opinions
-                opinions = [
-                    self.tech_lead.get_opinion(context, user_input),
-                    self.designer.get_opinion(context, user_input),
-                    self.pm.get_opinion(context, user_input)
-                ]
+                o1 = self.tech_lead.get_opinion(context, user_input)
+                time.sleep(3)
+                o2 = self.designer.get_opinion(context, user_input)
+                time.sleep(3)
+                o3 = self.pm.get_opinion(context, user_input)
+                time.sleep(3)
+                opinions = [o1, o2, o3]
 
                 # Stage 2: Reviews
-                reviews = [
-                    self.tech_lead.review(context, opinions),
-                    self.designer.review(context, opinions),
-                    self.pm.review(context, opinions)
-                ]
+                r1 = self.tech_lead.review(context, opinions)
+                time.sleep(3)
+                r2 = self.designer.review(context, opinions)
+                time.sleep(3)
+                r3 = self.pm.review(context, opinions)
+                time.sleep(3)
+                reviews = [r1, r2, r3]
 
                 # Format deliberations for synthesis
                 deliberation_history = "--- INITIAL OPINIONS ---\n"
@@ -137,7 +180,7 @@ class CouncilEngine:
             try:
                 renderer = PortfolioRenderer()
                 render_result = renderer.render(blueprint)
-                html_output = render_result.get("html", "")
+                html_output = render_result["html"] if isinstance(render_result, dict) else str(render_result)
             except Exception as e:
                 html_output = f"<h1>Failed to render HTML</h1><p>{str(e)}</p>"
 
@@ -168,7 +211,8 @@ class CouncilEngine:
 
         return {
             "deliberation": deliberation_history,
-            "blueprint": blueprint
+            "blueprint": blueprint,
+            "inferred_goal": user_input  # always the final resolved goal (inferred or provided)
         }
 
     def deliberate_stream(self, user_id, user_input, agent_config=None):

@@ -86,6 +86,17 @@ def login():
     if email != 'test@example.com' or password != 'test':
         return jsonify({"msg": "Bad username or password"}), 401
     
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        user = User(
+            email=email,
+            github_id="mock_id_123",
+            github_handle="tester123",
+            github_access_token="mock_token"
+        )
+        db.session.add(user)
+        db.session.commit()
+    
     access_token = create_access_token(identity=email)
     return jsonify(access_token=access_token)
 

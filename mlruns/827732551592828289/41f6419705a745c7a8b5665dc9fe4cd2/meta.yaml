@@ -1,0 +1,14 @@
+artifact_uri: file:///home/max/dev/Protofolio/mlruns/827732551592828289/41f6419705a745c7a8b5665dc9fe4cd2/artifacts
+end_time: 1775196237956
+entry_point_name: ''
+experiment_id: '827732551592828289'
+lifecycle_stage: active
+run_id: 41f6419705a745c7a8b5665dc9fe4cd2
+run_name: Deliberate_1
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1775196146263
+status: 3
+tags: []
+user_id: max

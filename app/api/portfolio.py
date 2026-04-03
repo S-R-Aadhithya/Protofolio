@@ -21,17 +21,20 @@ def generate():
         return jsonify({"msg": "User not found"}), 404
 
     data = request.get_json() or {}
-    job_goal = data.get('job_goal', 'Software Engineer')
+    job_goal = data.get('job_goal', None)  # None = auto-infer from resume
     theme = data.get('theme', 'dark')
 
     result = engine.deliberate(user.id, job_goal)
     blueprint = result['blueprint']
+    # Use the inferred/provided goal for DB storage
+    effective_goal = result.get('inferred_goal', job_goal) or 'Auto-Generated Portfolio'
     blueprint['theme'] = theme
 
     new_portfolio = Portfolio(
         user_id=user.id,
         title=blueprint.get('tagline', f"Professional {job_goal} Portfolio"),
-        target_role=job_goal
+        target_role=job_goal,
+        blueprint_json=json.dumps(blueprint)  # Save full blueprint for preview/export
     )
     db.session.add(new_portfolio)
     db.session.flush()
@@ -138,15 +141,18 @@ def get_portfolio(id):
 def preview_portfolio(id):
     portfolio = Portfolio.query.get_or_404(id)
     projects = PortfolioProject.query.filter_by(portfolio_id=id).all()
-
     theme = request.args.get('theme', 'dark')
 
-    blueprint = {
-        "tagline": portfolio.title,
-        "target_role": portfolio.target_role,
-        "theme": theme,
-        "projects": [{"name": p.name, "description": p.description} for p in projects]
-    }
+    # Restore full blueprint from saved JSON, fall back to minimal stub
+    if portfolio.blueprint_json:
+        blueprint = json.loads(portfolio.blueprint_json)
+    else:
+        blueprint = {
+            "tagline": portfolio.title,
+            "target_role": portfolio.target_role,
+            "projects": [{"name": p.name, "description": p.description} for p in projects]
+        }
+    blueprint['theme'] = theme
 
     rendered = renderer.render(blueprint, theme=theme, portfolio_id=id)
     return jsonify({
@@ -163,12 +169,17 @@ def export_portfolio(id):
     projects = PortfolioProject.query.filter_by(portfolio_id=id).all()
     theme = request.args.get('theme', 'dark')
 
-    blueprint = {
-        "tagline": portfolio.title,
-        "target_role": portfolio.target_role,
-        "theme": theme,
-        "projects": [{"name": p.name, "description": p.description} for p in projects]
-    }
+    # Restore full blueprint from saved JSON
+    if portfolio.blueprint_json:
+        blueprint = json.loads(portfolio.blueprint_json)
+    else:
+        blueprint = {
+            "tagline": portfolio.title,
+            "target_role": portfolio.target_role,
+            "projects": [{"name": p.name, "description": p.description} for p in projects]
+        }
+    blueprint['theme'] = theme
+
     rendered = renderer.render(blueprint, theme=theme, portfolio_id=id)
     
     memory_file = io.BytesIO()

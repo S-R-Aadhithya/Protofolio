@@ -1,5 +1,6 @@
 import os
 import json
+import time
 import mlflow
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_groq import ChatGroq
@@ -7,15 +8,38 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.messages import SystemMessage, HumanMessage
 
 class BaseAgent:
-    def __init__(self, name, role, model="llama-3.1-70b-versatile", temperature=0.7):
+    def __init__(self, name, role, model="llama-3.1-8b-instant", temperature=0.7):
         self.name = name
         self.role = role
         self._model = model
         self._temperature = temperature
-        if "groq" in model.lower() or "llama" in model.lower():
-            self.llm = ChatGroq(model=model, temperature=temperature)
+        self._groq_keys = [v for k, v in os.environ.items() if k.startswith("GROQ_API_KEY")]
+        self._key_index = 0
+        self._build_llm(0)
+
+    def _build_llm(self, key_index=0):
+        """Build the LLM client, using the key at key_index."""
+        if "groq" in self._model.lower() or "llama" in self._model.lower():
+            api_key = self._groq_keys[key_index % len(self._groq_keys)] if self._groq_keys else None
+            self.llm = ChatGroq(model=self._model, temperature=self._temperature, api_key=api_key)
         else:
-            self.llm = ChatGoogleGenerativeAI(model=model, temperature=temperature)
+            self.llm = ChatGoogleGenerativeAI(model=self._model, temperature=self._temperature)
+
+    def _invoke_with_rotation(self, messages, mock_fallback_fn):
+        """Invoke the LLM, cycling through ALL available API keys on 429 before giving up."""
+        num_keys = max(len(self._groq_keys), 1)
+        for attempt in range(num_keys):
+            try:
+                return self.llm.invoke(messages)
+            except Exception as e:
+                if "429" in str(e) and attempt < num_keys - 1:
+                    next_index = (self._key_index + attempt + 1) % num_keys
+                    print(f"WARNING: {self.name} got 429 on key [{attempt}], switching to key [{next_index}]...")
+                    self._build_llm(key_index=next_index)
+                else:
+                    print(f"WARNING: {self.name} failed after trying {attempt+1} key(s): {e}")
+                    return mock_fallback_fn()
+        return mock_fallback_fn()
 
     def update_config(self, temperature=None, model=None):
         """Dynamically reconfigure the LLM for Optuna hyperparameter sweeps."""
@@ -23,26 +47,19 @@ class BaseAgent:
             self._temperature = temperature
         if model is not None:
             self._model = model
-        
-        if "groq" in self._model.lower() or "llama" in self._model.lower():
-            self.llm = ChatGroq(model=self._model, temperature=self._temperature)
-        else:
-            self.llm = ChatGoogleGenerativeAI(model=self._model, temperature=self._temperature)
+        self._build_llm(self._key_index)
 
     @mlflow.trace
     def get_opinion(self, context, user_input):
         """Stage 1: Initial expert opinion based on context and user input."""
-        try:
-            system_msg = f"You are {self.name}, the {self.role} on the Council. {self.get_role_description()}"
-            prompt = ChatPromptTemplate.from_messages([
-                ("system", system_msg),
-                ("human", "Memory Context:\n{context}\n\nUser Input: {user_input}\n\nProvide your expert opinion for the portfolio plan.")
-            ])
-            response = self.llm.invoke(prompt.format_messages(context=context, user_input=user_input))
-            return response.content
-        except Exception as e:
-            print(f"WARNING: Agent {self.name} invocation failed: {e}. Falling back to mock.")
-            return self._mock_opinion(user_input)
+        system_msg = f"You are {self.name}, the {self.role} on the Council. {self.get_role_description()}"
+        prompt = ChatPromptTemplate.from_messages([
+            ("system", system_msg),
+            ("human", "Memory Context:\n{context}\n\nUser Input: {user_input}\n\nProvide your expert opinion for the portfolio plan. Be specific and reference details from the resume context.")
+        ])
+        messages = prompt.format_messages(context=context, user_input=user_input)
+        result = self._invoke_with_rotation(messages, lambda: type('R', (), {'content': self._mock_opinion(user_input)})())
+        return result.content
 
     def _mock_opinion(self, user_input):
         goal = user_input.lower()
@@ -87,97 +104,99 @@ class BaseAgent:
     @mlflow.trace
     def review(self, context, opinions):
         """Stage 2: Peer review of other council members' opinions."""
-        try:
-            others = "\n\n".join([f"Opinion {i+1}:\n{op}" for i, op in enumerate(opinions)])
-            system_msg = f"You are {self.name}, the {self.role}. Review the following colleague opinions. Be critical and constructive."
-            prompt = ChatPromptTemplate.from_messages([
-                ("system", system_msg),
-                ("human", "Colleague Opinions:\n{others}\n\nMemory Context:\n{context}\n\nProvide your analysis and ranking.")
-            ])
-            response = self.llm.invoke(prompt.format_messages(others=others, context=context))
-            return response.content
-        except Exception as e:
-            print(f"WARNING: Agent {self.name} review failed: {e}. Falling back to mock critique.")
-            if self.name == "Dave":
-                return f"[MOCK] Tech Lead's Critique: Content looks technically sound, but let's optimize performance further."
-            if self.name == "Elena":
-                return f"[MOCK] Designer's Critique: The layout is clean, but ensure accessibility standards are met."
-            if self.name == "Marcus":
-                return f"[MOCK] PM's Critique: Focus on the user's return on investment (ROI) for these features."
-            return f"[MOCK] {self.name} has reviewed the opinions."
+        others = "\n\n".join([f"Opinion {i+1}:\n{op}" for i, op in enumerate(opinions)])
+        system_msg = f"You are {self.name}, the {self.role}. Review the following colleague opinions. Be critical and constructive."
+        prompt = ChatPromptTemplate.from_messages([
+            ("system", system_msg),
+            ("human", "Colleague Opinions:\n{others}\n\nMemory Context:\n{context}\n\nProvide your analysis and ranking.")
+        ])
+        messages = prompt.format_messages(others=others, context=context)
+        
+        def mock_review():
+            if self.name == "Dave":   return type('R', (), {'content': "[MOCK] Tech Lead: Looks technically sound."})() 
+            if self.name == "Elena":  return type('R', (), {'content': "[MOCK] Designer: Ensure accessibility standards."})() 
+            if self.name == "Marcus": return type('R', (), {'content': "[MOCK] PM: Focus on user ROI."})() 
+            return type('R', (), {'content': f"[MOCK] {self.name} reviewed."})() 
+        
+        result = self._invoke_with_rotation(messages, mock_review)
+        return result.content
 
     def get_role_description(self):
         return ""
 
 class TechLead(BaseAgent):
-    def __init__(self, temperature=0.7, model="llama-3.1-70b-versatile"):
+    def __init__(self, temperature=0.7, model="llama-3.1-8b-instant"):
         super().__init__("Dave", "Tech Lead", model=model, temperature=temperature)
     def get_role_description(self):
         return "Focus on technical stack, performance, scalability, and code quality."
 
 class Designer(BaseAgent):
-    def __init__(self, temperature=0.7, model="llama-3.1-70b-versatile"):
+    def __init__(self, temperature=0.7, model="llama-3.1-8b-instant"):
         super().__init__("Elena", "UI/UX Designer", model=model, temperature=temperature)
     def get_role_description(self):
         return "Focus on visual aesthetics, user experience, typography, and responsive layout."
 
 class ProductManager(BaseAgent):
-    def __init__(self, temperature=0.7, model="llama-3.1-70b-versatile"):
+    def __init__(self, temperature=0.7, model="llama-3.1-8b-instant"):
         super().__init__("Marcus", "Product Manager", model=model, temperature=temperature)
     def get_role_description(self):
         return "Focus on project scope, professional impact, target audience, and clear messaging."
 
 class Chairman(BaseAgent):
-    def __init__(self, temperature=0.7, model="llama-3.1-70b-versatile"):
+    def __init__(self, temperature=0.7, model="llama-3.1-8b-instant"):
         super().__init__("Sophia", "Council Chairman", model=model, temperature=temperature)
 
     @mlflow.trace
     def synthesize(self, user_input, deliberations):
-        """Stage 3: Final synthesis into a concrete JSON blueprint with diff-like granularity."""
-        try:
-            system_msg = """You are Sophia, the Council Chairman. You take expert deliberations and produce a final portfolio blueprint.
-            IMPORTANT: Output a JSON blueprint that includes not just final values, but also 'modifications' for the developer to apply to a base template.
-            The JSON should have:
-            - 'tagline': A catchy primary headline.
-            - 'target_role': The professional title.
-            - 'tech_stack': List of technologies.
-            - 'projects': List of objects with 'name' and 'description'.
-            - 'layout_strategy': A description of the visual flow.
-            - 'template_dif': A list of specific HTML/CSS modifications in string format (e.g. "Add a neon border to project cards", "Use a monospaced font for the tagline").
-            """
-            prompt = ChatPromptTemplate.from_messages([
-                ("system", system_msg),
-                ("human", "User Goal: {user_input}\n\nDeliberations:\n{deliberations}\n\nOutput the JSON blueprint.")
-            ])
-            response = self.llm.invoke(prompt.format_messages(user_input=user_input, deliberations=deliberations))
-            return response.content
-        except Exception as e:
-            print(f"WARNING: Chairman synthesis failed: {e}. Falling back to mock JSON.")
-            import json
+        """Stage 3: Final synthesis into a concrete JSON blueprint."""
+        system_msg = """You are Sophia, the Council Chairman. Based on the deliberations below, produce a final portfolio blueprint as STRICT JSON.
+
+You MUST output ONLY a raw JSON object (no markdown, no ```json blocks, no explanation). The JSON must contain ALL of these keys:
+- "tagline": A specific, compelling 1-sentence headline for this exact person (NOT generic).
+- "target_role": Their professional title.
+- "tech_stack": A non-empty list of 6-10 specific tools/technologies this person actually uses (e.g. ["Figma", "Adobe XD", "HTML5", "CSS3", "React"]).
+- "projects": A non-empty list of 3 objects, each with "name" (real project title) and "description" (2-sentence impact-focused description).
+- "layout_strategy": A 2-3 sentence description of the page layout and design philosophy for this person's portfolio.
+- "template_dif": A list of 3-5 specific CSS/HTML tweaks (e.g. "Use purple accent color #7c3aed").
+
+Do NOT use placeholder names like 'Project A'. Use real, domain-specific project names based on the deliberations."""
+        prompt = ChatPromptTemplate.from_messages([
+            ("system", system_msg),
+            ("human", "User Goal: {user_input}\n\nDeliberations:\n{deliberations}\n\nOutput ONLY the JSON object.")
+        ])
+        messages = prompt.format_messages(user_input=user_input, deliberations=deliberations)
+
+        def mock_synthesis():
             import random
             goal = user_input.lower()
-
-            if "front" in goal:
-                tagline, stack = "Mastering the UI/UX Frontier", ["React", "TypeScript", "Tailwind CSS", "Vite", "Framer Motion"]
+            if "ui" in goal or "ux" in goal or "figma" in goal or "design" in goal:
+                tagline = "Crafting Intuitive Experiences Through Human-Centered Design"
+                stack = ["Figma", "Adobe XD", "Sketch", "HTML5", "CSS3", "Tailwind CSS", "React.js", "Zeplin"]
+            elif "front" in goal:
+                tagline = "Mastering the UI/UX Frontier"
+                stack = ["React", "TypeScript", "Tailwind CSS", "Vite", "Framer Motion"]
             elif "back" in goal:
-                tagline, stack = "Architecting Robust Backends", ["Python", "FastAPI", "PostgreSQL", "Redis", "Docker", "AWS"]
-            elif "data" in goal or "ai" in goal:
-                tagline, stack = "Turning Data into Decisions", ["Python", "PyTorch", "Pandas", "Scikit-Learn", "SQL", "Tableau"]
+                tagline = "Architecting Robust Backends"
+                stack = ["Python", "FastAPI", "PostgreSQL", "Redis", "Docker", "AWS"]
             else:
-                tagline, stack = "Full-Stack Solution Architecture", ["Next.js", "TypeScript", "PostgreSQL", "Prisma", "Node.js"]
-
-            num_projects = random.randint(1, 4)
-            projects = [{"name": f"Project {chr(65+i)} for {user_input[:10]}...", "description": f"Complexity level {random.randint(1, 10)} implementation."} for i in range(num_projects)]
-
+                tagline = "Full-Stack Solution Architecture"
+                stack = ["Next.js", "TypeScript", "PostgreSQL", "Prisma", "Node.js"]
             mock_blueprint = {
-                "tagline": tagline if random.random() > 0.1 else "",
+                "tagline": tagline,
                 "target_role": user_input,
                 "tech_stack": stack,
-                "layout_strategy": "A results-oriented layout.",
-                "projects": projects,
-                "template_dif": ["Use a clean sans-serif font", "Add subtle hover transitions"]
+                "layout_strategy": "A clean, portfolio-first layout with hero, featured projects grid, and skills section.",
+                "projects": [
+                    {"name": "E-Commerce Redesign", "description": "Led a full UI overhaul increasing user retention by 35%. Built with Figma components and a design system."},
+                    {"name": "Mobile App UX", "description": "Designed end-to-end user flows for a healthcare mobile app. Conducted usability testing with 50+ participants."},
+                    {"name": "Design System", "description": "Established a scalable component library used across 5 product lines. Improved design-to-dev handoff speed by 40%."}
+                ],
+                "template_dif": ["Use purple accent color #7c3aed", "Use Inter font family", "Add subtle box-shadow to project cards"]
             }
-            return json.dumps(mock_blueprint)
+            return type('R', (), {'content': json.dumps(mock_blueprint)})()
+
+        result = self._invoke_with_rotation(messages, mock_synthesis)
+        return result.content
 
     @mlflow.trace
     def process_ingestion(self, content, source_type="resume"):

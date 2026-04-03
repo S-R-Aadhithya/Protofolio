@@ -24,7 +24,7 @@ def get_memory_client():
         "embedder": {
             "provider": "gemini",
             "config": {
-                "model": "models/text-embedding-004",
+                "model": "models/embedding-001",
                 "api_key": api_key
             }
         },

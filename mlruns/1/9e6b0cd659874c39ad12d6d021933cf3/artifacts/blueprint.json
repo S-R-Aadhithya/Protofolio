@@ -1,0 +1,37 @@
+{
+  "tagline": "Transforming user experiences through sustainable and accessible design",
+  "target_role": "Senior UI/UX Designer",
+  "tech_stack": [
+    "Figma",
+    "Adobe XD",
+    "Sketch",
+    "HTML5",
+    "CSS3",
+    "JavaScript",
+    "InVision",
+    "React",
+    "Web Content Accessibility Guidelines (WCAG 2.1)"
+  ],
+  "projects": [
+    {
+      "name": "GreenEarth E-commerce Platform",
+      "description": "Designed a digital platform for an e-commerce startup, prioritizing user-centric designs, sustainable design principles, and accessibility. The platform aimed to create a seamless user experience for environmentally conscious consumers."
+    },
+    {
+      "name": "UI/UX Design System",
+      "description": "Developed a comprehensive design system for a software company, focusing on consistency, scalability, and user experience. The system included design principles, style guides, and reusable components."
+    },
+    {
+      "name": "Accessible Mobile App",
+      "description": "Designed a mobile app for people with disabilities, incorporating accessibility features such as screen reader compatibility, closed captions, and color contrast adjustment. The app aimed to provide an inclusive experience for users with disabilities."
+    }
+  ],
+  "layout_strategy": "The portfolio will have a clean and modern visual aesthetic, with a focus on user-centric design and accessibility. The layout will be easy to navigate, with clear typography, consistent color scheme, and high-quality images. The use of white space will emphasize the importance of simplicity and clarity in design.",
+  "template_dif": [
+    "Use a custom font to create a unique and recognizable brand identity.",
+    "Apply a subtle gradient effect to add depth and visual interest to the design.",
+    "Use a combination of icon fonts and custom illustrations to enhance the user experience.",
+    "Implement a responsive layout that adapts to various screen sizes and devices.",
+    "Use a consistent color scheme throughout the portfolio to create a cohesive brand identity."
+  ]
+}
