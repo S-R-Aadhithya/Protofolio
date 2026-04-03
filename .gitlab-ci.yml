@@ -1,12 +1,17 @@
 image: python:3.11-slim
 
 stages:
-  - build
-  - test
+  - setup
+  - lint
+  - security
+  - unit-test
+  - integration-test
+  - experiments
   - deploy
 
 variables:
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  PYTHONPATH: "$CI_PROJECT_DIR"
 
 cache:
   key:
@@ -16,30 +21,56 @@ cache:
     - .cache/pip/
 
 install-deps:
-  stage: build
+  stage: setup
   script:
     - pip install --upgrade pip
     - pip install -r requirements.txt mlflow optuna
+    - pip install flake8 black bandit pytest pytest-cov
 
+lint-code:
+  stage: lint
+  script:
+    - pip install flake8 black
+    - echo "Running Black constraint check..."
+    - black --check app tests || echo "Black formatting issues found"
+    - echo "Running Flake8..."
+    - flake8 app tests --max-line-length=120 || echo "Flake8 found style or syntax issues"
+  allow_failure: true
 
+security-scan:
+  stage: security
+  script:
+    - pip install bandit
+    - echo "Running Bandit for security vulnerabilities..."
+    - bandit -r app/ -ll -ii || echo "Bandit found potential security issues"
+  allow_failure: true
 
 unit-tests:
-  stage: test
+  stage: unit-test
   script:
     - pip install -r requirements.txt pytest pytest-cov mlflow optuna
-    - pytest tests/unit/ -v --tb=short --cov=app --cov-report=term-missing
+    - echo "Running Unit Tests..."
+    - pytest tests/unit/ -v --tb=short --cov=app --cov-report=term-missing --cov-report=xml
   coverage: '/TOTAL.*\s+(\d+%)$/'
+  artifacts:
+    when: always
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
 
 integration-tests:
-  stage: test
+  stage: integration-test
   script:
     - pip install -r requirements.txt pytest mlflow optuna
+    - echo "Running Integration Tests..."
     - pytest tests/integration/ -v --tb=short
 
 run-experiments:
-  stage: test
+  stage: experiments
   script:
     - pip install -r requirements.txt mlflow optuna
+    - echo "Iterating experiments..."
     - python run_experiments.py
   allow_failure: true
   artifacts:
@@ -47,9 +78,10 @@ run-experiments:
       - mlruns/
 
 run-optuna-tuning:
-  stage: test
+  stage: experiments
   script:
     - pip install -r requirements.txt mlflow optuna
+    - echo "Running parameter tuning..."
     - python optuna_tuner.py --trials 5
   allow_failure: true
   artifacts:
@@ -62,7 +94,7 @@ deploy-staging:
   stage: deploy
   script:
     - apt-get update -qq && apt-get install -y curl
-    - echo "Deploying to https://protofolio-backend.onrender.com"
+    - echo "Deploying to Staging: https://protofolio-backend.onrender.com"
     - curl --max-time 60 https://protofolio-backend.onrender.com/ && echo "Deployment live" || echo "Service warming up on Render free tier"
   allow_failure: true
   only:
@@ -72,7 +104,7 @@ deploy-production:
   stage: deploy
   script:
     - apt-get update -qq && apt-get install -y curl
-    - echo "Deploying to https://protofolio-backend.onrender.com"
+    - echo "Deploying to Production: https://protofolio-backend.onrender.com"
     - curl --max-time 60 https://protofolio-backend.onrender.com/ && echo "Production live" || echo "Service warming up on Render free tier"
   allow_failure: true
   only:
