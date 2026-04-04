@@ -19,7 +19,7 @@ def run_test():
     if r2.status_code != 200: sys.exit(1)
     print("3. Deliberation"); r3 = requests.post(f"{b}/portfolio/generate", headers=h, json={"theme": "dark"})
     if r3.status_code == 200:
-        d = r3.json(); print(json.dumps(d.get("blueprint", {}), indent=2)); pid = d.get("portfolio_id"); r4 = requests.get(f"{b}/portfolio/{pid}/preview", headers=h)
+        d = r3.json(); print("\n--- DELIBERATION LOG ---\n"); print(d.get("deliberation", "No log found")); print("\n--- BLUEPRINT ---\n"); print(json.dumps(d.get("blueprint", {}), indent=2)); pid = d.get("portfolio_id"); r4 = requests.get(f"{b}/portfolio/{pid}/preview", headers=h)
         if r4.status_code == 200: os.makedirs("output", exist_ok=True); open("output/index.html", "w").write(r4.json().get("html", "")); open("output/styles.css", "w").write(r4.json().get("css", ""))
     print("✓ Local System Test Complete! Server and agents are fully operational.")
 

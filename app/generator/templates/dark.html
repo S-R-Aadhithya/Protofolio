@@ -4,401 +4,149 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ tagline }}</title>
-    <meta name="description" content="{{ target_role }} portfolio — {{ tagline }}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg: #0a0d14;
-            --surface: #111827;
-            --surface-2: #1a2233;
-            --border: #1e2d45;
-            --text: #e2e8f0;
-            --muted: #64748b;
-            --accent: #7c3aed;
-            --accent-glow: rgba(124, 58, 237, 0.15);
-            --accent-light: #a78bfa;
-        }
-
-        *, *::before, *::after {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        html { scroll-behavior: smooth; }
-
-        body {
-            font-family: 'Inter', -apple-system, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            line-height: 1.7;
-            overflow-x: hidden;
-        }
-
-        /* ─── NAV ─────────────────────────────────── */
-        nav {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            background: rgba(10, 13, 20, 0.85);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border-bottom: 1px solid var(--border);
-            z-index: 1000;
-            padding: 1.1rem 0;
-        }
-
-        .nav-inner {
-            max-width: 1140px;
-            margin: 0 auto;
-            padding: 0 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            font-weight: 700;
-            font-size: 1.1rem;
-            color: var(--accent-light);
-            text-decoration: none;
-            letter-spacing: -0.5px;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 2.5rem;
-            list-style: none;
-        }
-
-        .nav-links a {
-            color: var(--muted);
-            text-decoration: none;
-            font-size: 0.875rem;
-            font-weight: 500;
-            transition: color 0.2s;
-        }
-
-        .nav-links a:hover { color: var(--text); }
-
-        /* ─── HERO ────────────────────────────────── */
-        #hero {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 8rem 2rem 6rem;
-            background:
-                radial-gradient(ellipse 80% 50% at 50% 0%, rgba(124,58,237,0.12) 0%, transparent 70%);
-            position: relative;
-        }
-
-        .hero-badge {
-            display: inline-block;
-            padding: 0.4rem 1.2rem;
-            border-radius: 100px;
-            border: 1px solid rgba(124,58,237,0.4);
-            background: var(--accent-glow);
-            color: var(--accent-light);
-            font-size: 0.8rem;
-            font-weight: 600;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
-            margin-bottom: 2rem;
-        }
-
-        .hero-title {
-            font-size: clamp(2.2rem, 5vw, 4rem);
-            font-weight: 800;
-            line-height: 1.15;
-            letter-spacing: -1.5px;
-            background: linear-gradient(135deg, #fff 0%, var(--accent-light) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            max-width: 800px;
-            margin-bottom: 1.5rem;
-        }
-
-        .hero-sub {
-            font-size: 1.1rem;
-            color: var(--muted);
-            max-width: 540px;
-            margin-bottom: 3rem;
-        }
-
-        .hero-cta {
-            display: inline-flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .btn {
-            padding: 0.75rem 1.75rem;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.2s;
-            cursor: pointer;
-            border: none;
-        }
-
-        .btn-primary {
-            background: var(--accent);
-            color: #fff;
-        }
-
-        .btn-primary:hover {
-            background: #6d28d9;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(124,58,237,0.35);
-        }
-
-        .btn-outline {
-            background: transparent;
-            color: var(--text);
-            border: 1px solid var(--border);
-        }
-
-        .btn-outline:hover {
-            border-color: var(--accent);
-            color: var(--accent-light);
-        }
-
-        /* ─── SECTION BASE ────────────────────────── */
-        section {
-            padding: 6rem 2rem;
-        }
-
-        .container {
-            max-width: 1140px;
-            margin: 0 auto;
-        }
-
-        .section-label {
-            font-size: 0.75rem;
-            font-weight: 700;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            color: var(--accent);
-            margin-bottom: 0.75rem;
-        }
-
-        .section-title {
-            font-size: clamp(1.6rem, 3vw, 2.2rem);
-            font-weight: 700;
-            letter-spacing: -0.5px;
-            margin-bottom: 3.5rem;
-            color: var(--text);
-        }
-
-        /* ─── STRATEGY / ABOUT ────────────────────── */
-        #about {
-            background: var(--surface);
-            border-top: 1px solid var(--border);
-            border-bottom: 1px solid var(--border);
-        }
-
-        .about-text {
-            font-size: 1.15rem;
-            color: #94a3b8;
-            max-width: 780px;
-            line-height: 1.9;
-        }
-
-        /* ─── PROJECTS ────────────────────────────── */
-        .projects-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .project-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 2rem;
-            transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .project-card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0;
-            height: 2px;
-            background: linear-gradient(90deg, var(--accent), var(--accent-light));
-            opacity: 0;
-            transition: opacity 0.25s;
-        }
-
-        .project-card:hover {
-            transform: translateY(-6px);
-            border-color: rgba(124,58,237,0.4);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-        }
-
-        .project-card:hover::before { opacity: 1; }
-
-        .project-card h3 {
-            font-size: 1.1rem;
-            font-weight: 700;
-            margin-bottom: 0.75rem;
-            color: var(--text);
-        }
-
-        .project-card p {
-            font-size: 0.9rem;
-            color: var(--muted);
-            line-height: 1.75;
-        }
-
-        /* ─── SKILLS ──────────────────────────────── */
-        #skills {
-            background: var(--surface);
-            border-top: 1px solid var(--border);
-        }
-
-        .tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.75rem;
-        }
-
-        .tag {
-            background: var(--surface-2);
-            border: 1px solid var(--border);
-            color: var(--accent-light);
-            padding: 0.5rem 1.1rem;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            font-weight: 500;
-            transition: border-color 0.2s, background 0.2s;
-        }
-
-        .tag:hover {
-            border-color: var(--accent);
-            background: var(--accent-glow);
-        }
-
-        /* ─── CONTACT ─────────────────────────────── */
-        #contact {
-            text-align: center;
-            border-top: 1px solid var(--border);
-        }
-
-        #contact .section-title { margin-bottom: 1rem; }
-
-        .contact-sub {
-            color: var(--muted);
-            font-size: 1rem;
-            margin-bottom: 2.5rem;
-        }
-
-        /* ─── FOOTER ──────────────────────────────── */
-        footer {
-            padding: 2.5rem 2rem;
-            text-align: center;
-            color: var(--muted);
-            font-size: 0.8rem;
-            border-top: 1px solid var(--border);
-        }
-
-        /* ─── RESPONSIVE ──────────────────────────── */
-        @media (max-width: 768px) {
-            .nav-links { display: none; }
-            .hero-title { letter-spacing: -0.5px; }
-            section { padding: 4rem 1.25rem; }
-        }
+        body { font-family: 'Inter', sans-serif; }
     </style>
 </head>
-<body>
-
-<nav>
-    <div class="nav-inner">
-        <a href="#hero" class="logo">Portfolio</a>
-        <ul class="nav-links">
-            <li><a href="#about">About</a></li>
-            <li><a href="#projects">Projects</a></li>
-            <li><a href="#skills">Skills</a></li>
-            <li><a href="#contact">Contact</a></li>
-        </ul>
-    </div>
-</nav>
-
-<section id="hero">
-    <div class="hero-badge">{{ target_role }}</div>
-    <h1 class="hero-title">{{ tagline }}</h1>
-    <p class="hero-sub">Crafting exceptional digital experiences with a focus on clarity, accessibility, and impact.</p>
-    <div class="hero-cta">
-        <a href="#projects" class="btn btn-primary">View Work</a>
-        <a href="#contact" class="btn btn-outline">Get In Touch</a>
-    </div>
-</section>
-
-<section id="about">
-    <div class="container">
-        <p class="section-label">Strategy</p>
-        <h2 class="section-title">Approach & Philosophy</h2>
-        <p class="about-text">{{ layout_strategy }}</p>
-    </div>
-</section>
-
-<section id="projects">
-    <div class="container">
-        <p class="section-label">Work</p>
-        <h2 class="section-title">Featured Projects</h2>
-        <div class="projects-grid">
-            {% for project in projects %}
-            <div class="project-card">
-                <h3>{{ project.name }}</h3>
-                <p>{{ project.description }}</p>
+<body class="bg-slate-900 text-slate-300">
+    <!-- Navigation -->
+    <nav class="navbar navbar-dark bg-transparent border-b border-slate-800 py-4">
+        <div class="container d-flex justify-content-between">
+            <a class="navbar-brand fw-bold text-white tracking-widest uppercase" href="#">{{ target_role }}</a>
+            <div class="d-none d-md-flex space-x-6 text-sm fw-semibold">
+                <a href="#about" class="text-slate-400 hover:text-white transition">About</a>
+                <a href="#experience" class="text-slate-400 hover:text-white transition">Experience</a>
+                <a href="#projects" class="text-slate-400 hover:text-white transition">Projects</a>
+                <a href="#contact" class="text-slate-400 hover:text-white transition">Contact</a>
             </div>
-            {% endfor %}
         </div>
-    </div>
-</section>
+    </nav>
 
-<section id="skills">
-    <div class="container">
-        <p class="section-label">Expertise</p>
-        <h2 class="section-title">Core Skills</h2>
-        <div class="tags">
-            {% for tech in tech_stack %}
-            <span class="tag">{{ tech }}</span>
-            {% endfor %}
+    <!-- Hero Section -->
+    <header class="py-24 text-center border-b border-slate-800 bg-slate-900 shadow-lg relative overflow-hidden">
+        <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/40 via-slate-900 to-slate-900"></div>
+        <div class="container relative z-10">
+            <span class="badge bg-indigo-600/30 text-indigo-400 px-4 py-2 border border-indigo-500/30 rounded-full text-sm font-semibold tracking-wider mb-6 inline-block">PORTFOLIO</span>
+            <h1 class="display-3 fw-bolder text-white mb-4 tracking-tight drop-shadow-md">{{ tagline }}</h1>
+            <p class="lead text-slate-400 max-w-2xl mx-auto">{{ layout_strategy }}</p>
         </div>
-    </div>
-</section>
+    </header>
 
-<section id="contact">
-    <div class="container">
-        <p class="section-label">Contact</p>
-        <h2 class="section-title">Let's Work Together</h2>
-        <p class="contact-sub">Interested in collaborating? Reach out via LinkedIn or email.</p>
-        <a href="mailto:hello@portfolio.dev" class="btn btn-primary">Say Hello</a>
-    </div>
-</section>
+    <main class="container py-16 space-y-24">
+        {% if about_me %}
+        <section id="about" class="row align-items-center">
+            <div class="col-lg-4 mb-4 mb-lg-0">
+                <h2 class="display-6 fw-bold text-white">About Me</h2>
+                <div class="h-1 w-20 bg-indigo-500 mt-3 rounded"></div>
+            </div>
+            <div class="col-lg-8">
+                <div class="p-6 rounded-2xl bg-slate-800/50 border border-slate-700 hover:bg-slate-800/80 transition shadow-xl">
+                    <p class="text-lg leading-relaxed">{{ about_me }}</p>
+                </div>
+            </div>
+        </section>
+        {% endif %}
 
-<footer>
-    <p>&copy; 2026 {{ tagline }}. Built with Protofolio.</p>
-</footer>
+        {% if experience %}
+        <section id="experience">
+            <h2 class="display-6 fw-bold text-white mb-8">Professional Journey</h2>
+            <div class="row g-4">
+                {% for exp in experience %}
+                <div class="col-12">
+                    <div class="card bg-slate-800 border-0 border-l-4 border-indigo-500 shadow-sm hover:shadow-indigo-500/10 transition">
+                        <div class="card-body p-6">
+                            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+                                <h3 class="h4 fw-bold text-white m-0">{{ exp.role }}</h3>
+                                <span class="badge bg-slate-700 text-indigo-300 fs-6">{{ exp.duration }}</span>
+                            </div>
+                            <h4 class="h6 text-slate-400 fw-semibold tracking-wider uppercase mb-4">{{ exp.company }}</h4>
+                            <p class="card-text text-slate-300">{{ exp.responsibilities }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
 
-{% if portfolio_id %}
-<script>
-    try {
-        fetch(`/api/portfolio/{{ portfolio_id }}/analytics`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' }
-        });
-    } catch (e) {}
-</script>
-{% endif %}
+        {% if projects %}
+        <section id="projects">
+            <h2 class="display-6 fw-bold text-white mb-8">Selected Work</h2>
+            <div class="row g-4">
+                {% for proj in projects %}
+                <div class="col-lg-6">
+                    <div class="card h-100 bg-slate-800/60 border border-slate-700 rounded-xl overflow-hidden hover:-translate-y-2 transition duration-300">
+                        <div class="card-body p-5 d-flex flex-column">
+                            <h3 class="card-title fw-bold text-white mb-3">{{ proj.name }}</h3>
+                            <p class="card-text text-slate-400 flex-grow-1">{{ proj.description }}</p>
+                            <a href="#" class="mt-4 text-indigo-400 font-semibold hover:text-indigo-300 d-inline-flex align-items-center">View Project →</a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        <div class="row g-5">
+            {% if education %}
+            <div class="col-lg-6">
+                <section id="education">
+                    <h2 class="h3 fw-bold text-white mb-6">Education</h2>
+                    <ul class="list-group list-group-flush bg-transparent">
+                        {% for ed in education %}
+                        <li class="list-group-item bg-transparent border-slate-800 px-0 py-4">
+                            <h4 class="fw-bold text-white m-0">{{ ed.degree }}</h4>
+                            <div class="text-slate-400 d-flex justify-content-between align-items-center mt-2">
+                                <span>{{ ed.institution }}</span>
+                                <span class="badge bg-slate-800 text-slate-300">{{ ed.year }}</span>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </section>
+            </div>
+            {% endif %}
+
+            {% if tech_stack %}
+            <div class="col-lg-6">
+                <section id="skills">
+                    <h2 class="h3 fw-bold text-white mb-6">Tech Stack</h2>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for t in tech_stack %}
+                        <span class="badge bg-slate-800 text-slate-200 border border-slate-700 px-3 py-2 fs-6 rounded-pill hover:bg-indigo-600 hover:border-indigo-500 transition cursor-default">{{ t }}</span>
+                        {% endfor %}
+                    </div>
+                </section>
+            </div>
+            {% endif %}
+        </div>
+    </main>
+
+    {% if contact %}
+    <footer id="contact" class="bg-slate-950 py-16 border-t border-slate-800 mt-12 text-center">
+        <div class="container">
+            <h2 class="h2 fw-bold text-white drop-shadow-md">Let's Connect</h2>
+            <p class="text-slate-400 mb-8 max-w-xl mx-auto">Open to opportunities, collaboration, and conversations.</p>
+            <div class="d-flex justify-content-center gap-4 flex-wrap">
+                {% if contact.email %}
+                <a href="mailto:{{ contact.email }}" class="btn btn-outline-light border-slate-700 px-5 py-3 rounded-full hover:bg-slate-800 hover:text-white transition fw-semibold">Email Me</a>
+                {% endif %}
+                {% if contact.linkedin %}
+                <a href="{{ contact.linkedin }}" class="btn btn-outline-light border-slate-700 px-5 py-3 rounded-full hover:bg-slate-800 hover:text-white transition fw-semibold">LinkedIn</a>
+                {% endif %}
+                {% if contact.github %}
+                <a href="{{ contact.github }}" class="btn btn-outline-light border-slate-700 px-5 py-3 rounded-full hover:bg-slate-800 hover:text-white transition fw-semibold">GitHub</a>
+                {% endif %}
+            </div>
+        </div>
+    </footer>
+    {% endif %}
 
 </body>
 </html>

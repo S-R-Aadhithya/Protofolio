@@ -4,220 +4,124 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ tagline }}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            scroll-behavior: smooth;
-        }
-
-        :root {
-            --primary: #f0f4ff;
-            --secondary: #1a1a2e;
-            --accent: #ff00ff;
-            --accent-soft: rgba(255, 0, 255, 0.1);
-            --gradient: linear-gradient(135deg, #12c2e9, #c471ed, #f64f59);
-        }
-
-        body {
-            font-family: 'Outfit', sans-serif;
-            background: var(--primary);
-            color: var(--secondary);
-            overflow-x: hidden;
-        }
-
-        /* Nav */
-        nav {
-            padding: 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid var(--secondary);
-        }
-
-        .nav-links a {
-            text-decoration: none;
-            color: var(--secondary);
-            font-weight: 600;
-            margin-left: 2rem;
-            font-size: 1rem;
-            text-transform: uppercase;
-        }
-
-        /* Hero */
-        #hero {
-            height: 80vh;
-            display: flex;
-            align-items: center;
-            padding: 0 4rem;
-            position: relative;
-        }
-
-        .hero-text {
-            z-index: 10;
-            max-width: 800px;
-        }
-
-        h1 {
-            font-family: 'Playfair Display', serif;
-            font-size: 5rem;
-            font-weight: 700;
-            line-height: 1;
-            margin-bottom: 2rem;
-            color: var(--secondary);
-        }
-
-        .hero-title-accent {
-            font-style: italic;
-            color: transparent;
-            -webkit-text-stroke: 1.5px var(--secondary);
-        }
-
-        .badge {
-            display: inline-block;
-            background: var(--secondary);
-            color: var(--primary);
-            padding: 0.5rem 1rem;
-            border-radius: 4px;
-            font-weight: 600;
-            margin-bottom: 1.5rem;
-        }
-
-        /* Sections */
-        section {
-            padding: 100px 4rem;
-            border-bottom: 2px solid var(--secondary);
-        }
-
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            margin-bottom: 4rem;
-        }
-
-        .section-header h2 {
-            font-size: 3rem;
-            font-family: 'Playfair Display', serif;
-        }
-
-        /* Projects */
-        .projects-scroll {
-            display: flex;
-            overflow-x: auto;
-            gap: 2rem;
-            padding-bottom: 2rem;
-            scrollbar-width: thin;
-            scrollbar-color: var(--secondary) transparent;
-        }
-
-        .project-card {
-            min-width: 400px;
-            background: white;
-            border: 2px solid var(--secondary);
-            padding: 2.5rem;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        .project-card:hover {
-            transform: rotate(-2deg);
-            background: var(--accent-soft);
-            box-shadow: 10px 10px 0px var(--secondary);
-        }
-
-        .project-card h3 {
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .project-card p {
-            color: #555;
-            font-size: 1rem;
-        }
-
-        /* Expertise */
-        .skills-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 2rem;
-        }
-
-        .skill {
-            font-size: 1.25rem;
-            font-weight: 800;
-            padding: 2rem;
-            border: 2px solid var(--secondary);
-            text-align: center;
-            background: white;
-            transition: background 0.2s;
-        }
-
-        .skill:hover {
-            background: var(--secondary);
-            color: var(--primary);
-        }
-
-        @media (max-width: 768px) {
-            h1 { font-size: 3rem; }
-            section { padding: 60px 2rem; }
-            .project-card { min-width: 100%; }
-        }
+        body { font-family: 'Inter', sans-serif; background-color: #fdfaf6; color: #1a1a1a; }
+        h1, h2, h3, h4, .display-font { font-family: 'Syne', sans-serif; }
+        .asymmetric-border { border: 2px solid #1a1a1a; box-shadow: 8px 8px 0px #eb5e28; }
+        .creative-bg { background-image: radial-gradient(#d4d4d4 1px, transparent 1px); background-size: 20px 20px; }
     </style>
 </head>
-<body>
-    <nav>
-        <div style="font-weight: 800; font-size: 1.5rem; letter-spacing: -2px;">PRTF.</div>
-        <div class="nav-links">
-            <a href="#projects">Work</a>
-            <a href="#about">About</a>
-            <a href="#contact">Contact</a>
-        </div>
-    </nav>
+<body class="antialiased creative-bg overflow-x-hidden">
 
-    <section id="hero">
-        <div class="hero-text">
-            <span class="badge">{{ target_role }}</span>
-            <h1>{{ tagline }} <span class="hero-title-accent">Creative Solutions.</span></h1>
-            <p style="font-size: 1.25rem; max-width: 600px;">{{ layout_strategy }}</p>
-        </div>
-    </section>
-
-    <section id="projects">
-        <div class="section-header">
-            <h2>Work</h2>
-        </div>
-        <div class="projects-scroll">
-            {% for project in projects %}
-            <div class="project-card">
-                <h3>{{ project.name }}</h3>
-                <p>{{ project.description }}</p>
+    <div class="container py-12 lg:py-24 max-w-7xl">
+        
+        <!-- Hero: Asymmetric overlapping grid -->
+        <header class="row align-items-center mb-24 relative">
+            <div class="col-lg-8 position-relative z-10">
+                <div class="bg-white p-8 md:p-14 asymmetric-border">
+                    <div class="inline-block bg-black text-white px-4 py-1 font-bold text-sm uppercase tracking-widest mb-6">{{ target_role }}</div>
+                    <h1 class="display-2 font-black leading-none mb-0 text-black">{{ tagline }}</h1>
+                </div>
             </div>
-            {% endfor %}
-        </div>
-    </section>
+            {% if contact %}
+            <div class="col-lg-4 mt-8 mt-lg-0 transform lg:-translate-x-12 z-0">
+                <div class="bg-[#eb5e28] text-white p-8 asymmetric-border shadow-none border-black">
+                    <h3 class="h4 font-bold mb-6">Contact</h3>
+                    <ul class="list-unstyled space-y-4">
+                        {% if contact.email %}<li><a href="mailto:{{ contact.email }}" class="text-white hover:text-black font-semibold text-lg border-b-2 border-white pb-1 transition">Email</a></li>{% endif %}
+                        {% if contact.linkedin %}<li><a href="{{ contact.linkedin }}" class="text-white hover:text-black font-semibold text-lg border-b-2 border-white pb-1 transition">LinkedIn</a></li>{% endif %}
+                        {% if contact.github %}<li><a href="{{ contact.github }}" class="text-white hover:text-black font-semibold text-lg border-b-2 border-white pb-1 transition">GitHub</a></li>{% endif %}
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
+        </header>
 
-    <section id="about">
-        <div class="section-header">
-            <h2>Expertise</h2>
-        </div>
-        <div class="skills-grid">
-            {% for tech in tech_stack %}
-            <div class="skill">{{ tech }}</div>
-            {% endfor %}
-        </div>
-    </section>
+        {% if about_me %}
+        <section class="mb-24 max-w-4xl mx-auto text-center bg-white p-10 md:p-16 border-2 border-black shadow-[12px_12px_0px_rgba(0,0,0,0.1)]">
+            <h2 class="display-5 font-bold mb-8">About Me.</h2>
+            <p class="text-xl leading-relaxed text-gray-800">{{ about_me }}</p>
+        </section>
+        {% endif %}
 
-    <section id="contact" style="text-align: center; background: var(--secondary); color: var(--primary);">
-        <h2 style="font-family: 'Playfair Display'; font-size: 4rem;">Let's Talk.</h2>
-        <p style="font-size: 1.5rem; margin-top: 2rem;">Available for creative collaborations.</p>
-    </section>
+        <!-- Mixed Grid for Experience and Skills -->
+        <div class="row g-5 mb-24">
+            
+            {% if experience %}
+            <div class="col-lg-7 space-y-8">
+                <h2 class="display-6 font-bold bg-yellow-300 inline-block px-4 py-2 border-2 border-black transform -rotate-2 mb-6">Experience</h2>
+                {% for exp in experience %}
+                <div class="bg-white p-8 border-2 border-black hover:-translate-y-2 transition duration-300">
+                    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+                        <h3 class="h3 font-bold m-0">{{ exp.role }}</h3>
+                        <span class="text-sm font-bold bg-black text-white px-3 py-1">{{ exp.duration }}</span>
+                    </div>
+                    <h4 class="h5 font-semibold text-[#eb5e28] mb-4">{{ exp.company }}</h4>
+                    <p class="text-gray-700 m-0">{{ exp.responsibilities }}</p>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
 
-    {% if portfolio_id %}
-    <script>
-        fetch(`/api/portfolio/{{ portfolio_id }}/analytics`, { method: 'POST' });
-    </script>
-    {% endif %}
+            <div class="col-lg-5 space-y-16">
+                {% if tech_stack %}
+                <section>
+                    <h2 class="display-6 font-bold bg-green-300 inline-block px-4 py-2 border-2 border-black transform rotate-2 mb-6">Tech Stack</h2>
+                    <div class="d-flex flex-wrap gap-3">
+                        {% for t in tech_stack %}
+                        <span class="bg-white border-2 border-black text-black font-bold px-4 py-2 hover:bg-black hover:text-white transition cursor-default">{{ t }}</span>
+                        {% endfor %}
+                    </div>
+                </section>
+                {% endif %}
+
+                {% if education %}
+                <section>
+                    <h2 class="display-6 font-bold bg-blue-300 inline-block px-4 py-2 border-2 border-black transform -rotate-1 mb-6">Education</h2>
+                    <div class="space-y-6">
+                        {% for ed in education %}
+                        <div class="bg-white p-6 border-2 border-black">
+                            <h3 class="h4 font-bold mb-2">{{ ed.degree }}</h3>
+                            <div class="text-gray-600 font-semibold">{{ ed.institution }}</div>
+                            <div class="mt-2 text-sm font-bold bg-gray-200 inline-block px-2 py-1">{{ ed.year }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </section>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if projects %}
+        <section class="mb-24">
+            <h2 class="display-4 font-black text-center mb-16">Featured Works.</h2>
+            <div class="row g-5">
+                {% for proj in projects %}
+                <div class="col-md-6">
+                    <div class="bg-white p-8 h-100 asymmetric-border hover:shadow-[12px_12px_0px_#403d39] transition-all duration-300">
+                        <h3 class="display-font h2 font-bold mb-4">{{ proj.name }}</h3>
+                        <p class="text-gray-700 text-lg m-0">{{ proj.description }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-black text-white py-12 border-t-8 border-[#eb5e28]">
+        <div class="container text-center">
+            <h2 class="display-font h1 font-bold mb-6">{{ tagline }}</h2>
+            <p class="text-gray-400">Created with unique creative intent.</p>
+        </div>
+    </footer>
+
 </body>
 </html>

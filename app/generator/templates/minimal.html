@@ -4,165 +4,131 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ tagline }}</title>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Serif:wght@400;600&display=swap" rel="stylesheet">
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Helvetica+Neue:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            scroll-behavior: smooth;
-        }
-
-        body {
-            font-family: 'IBM Plex Sans', sans-serif;
-            background: #fafafa;
-            color: #1a1a1a;
-            line-height: 1.7;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 0 2rem;
-        }
-
-        nav {
-            padding: 2rem 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        nav a {
-            text-decoration: none;
-            color: #666;
-            font-size: 0.9rem;
-            margin-left: 1.5rem;
-            transition: color 0.2s;
-        }
-
-        nav a:hover {
-            color: #000;
-        }
-
-        /* Hero */
-        #hero {
-            padding: 10vh 0;
-        }
-
-        h1 {
-            font-family: 'IBM Plex Serif', serif;
-            font-size: 3rem;
-            font-weight: 600;
-            line-height: 1.1;
-            margin-bottom: 1.5rem;
-            letter-spacing: -1px;
-        }
-
-        .subtitle {
-            font-size: 1.1rem;
-            color: #666;
-            max-width: 600px;
-        }
-
-        /* Sections */
-        section {
-            padding: 4rem 0;
-            border-top: 1px solid #eaeaea;
-        }
-
-        h2 {
-            font-size: 0.8rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.1rem;
-            color: #999;
-            margin-bottom: 2rem;
-        }
-
-        .project-item {
-            margin-bottom: 3rem;
-        }
-
-        h3 {
-            font-size: 1.25rem;
-            font-weight: 500;
-            margin-bottom: 0.5rem;
-        }
-
-        .project-desc {
-            color: #555;
-            font-size: 0.95rem;
-        }
-
-        /* Skills */
-        .skills-list {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-        }
-
-        .skill-item {
-            font-weight: 500;
-        }
-
-        /* Footer */
-        footer {
-            padding: 4rem 0;
-            color: #999;
-            font-size: 0.85rem;
-        }
-
-        @media (max-width: 600px) {
-            h1 { font-size: 2.25rem; }
-            .skills-list { grid-template-columns: 1fr; }
-        }
+        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background: #ffffff; color: #111; }
+        .border-thin { border: 1px solid #e5e5e5; }
     </style>
 </head>
-<body>
-    <nav>
-        <span style="font-weight: 600; color: #000;">{{ target_role }}</span>
-        <div class="nav-links">
-            <a href="#projects">Work</a>
-            <a href="#about">About</a>
-            <a href="#contact">Contact</a>
-        </div>
-    </nav>
+<body class="antialiased overflow-x-hidden">
+    
+    <div class="min-vh-100 d-flex flex-column">
+        
+        <!-- Header -->
+        <header class="container py-8 border-b border-thin d-flex justify-content-between align-items-baseline flex-wrap gap-4">
+            <h1 class="display-6 fw-bold m-0 tracking-tighter">{{ target_role }}</h1>
+            <div class="text-muted fs-6">Based in Global Network</div>
+        </header>
 
-    <div id="hero">
-        <h1>{{ tagline }}</h1>
-        <p class="subtitle">{{ layout_strategy }}</p>
+        <!-- Main Grid Area -->
+        <main class="flex-grow-1">
+            <div class="container">
+                <div class="row min-vh-100">
+                    
+                    <!-- Left Column: About & Skills -->
+                    <div class="col-lg-5 border-end border-thin py-12 pe-lg-12">
+                        
+                        <h2 class="display-4 fw-bold tracking-tight mb-8">{{ tagline }}</h2>
+                        
+                        {% if about_me %}
+                        <div class="mb-12">
+                            <h3 class="text-uppercase tracking-widest text-muted fs-6 mb-4 font-bold">About</h3>
+                            <p class="fs-5 leading-relaxed font-light text-secondary">{{ about_me }}</p>
+                        </div>
+                        {% endif %}
+
+                        {% if tech_stack %}
+                        <div class="mb-12">
+                            <h3 class="text-uppercase tracking-widest text-muted fs-6 mb-4 font-bold">Domain Expertise</h3>
+                            <div class="d-flex flex-wrap gap-2">
+                                {% for t in tech_stack %}
+                                <span class="bg-light text-dark px-3 py-1 rounded-1 fs-6 font-medium border border-thin">{{ t }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if education %}
+                        <div>
+                            <h3 class="text-uppercase tracking-widest text-muted fs-6 mb-4 font-bold">Education</h3>
+                            <ul class="list-unstyled">
+                                {% for ed in education %}
+                                <li class="mb-3">
+                                    <div class="fw-bold">{{ ed.degree }}</div>
+                                    <div class="text-muted">{{ ed.institution }}, {{ ed.year }}</div>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+
+                    </div>
+
+                    <!-- Right Column: Experience & Projects -->
+                    <div class="col-lg-7 py-12 ps-lg-12">
+                        
+                        {% if experience %}
+                        <section class="mb-16">
+                            <h3 class="text-uppercase tracking-widest text-muted fs-6 mb-8 font-bold border-bottom border-thin pb-4">Professional Record</h3>
+                            
+                            <div class="space-y-10">
+                                {% for exp in experience %}
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="text-muted fw-bold fs-6 pt-1">{{ exp.duration }}</div>
+                                    </div>
+                                    <div class="col-md-9">
+                                        <h4 class="h5 fw-bold mb-1">{{ exp.role }}</h4>
+                                        <h5 class="h6 text-muted mb-3">{{ exp.company }}</h5>
+                                        <p class="text-secondary leading-relaxed m-0">{{ exp.responsibilities }}</p>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </section>
+                        {% endif %}
+
+                        {% if projects %}
+                        <section>
+                            <h3 class="text-uppercase tracking-widest text-muted fs-6 mb-8 font-bold border-bottom border-thin pb-4">Selected Work</h3>
+                            
+                            <div class="row g-4">
+                                {% for proj in projects %}
+                                <div class="col-md-6">
+                                    <div class="border border-thin p-5 h-100 bg-white hover:bg-light transition duration-300">
+                                        <h4 class="h6 fw-bold mb-3">{{ proj.name }}</h4>
+                                        <p class="text-secondary fs-6 m-0">{{ proj.description }}</p>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </section>
+                        {% endif %}
+
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="border-top border-thin bg-light py-8">
+            <div class="container d-flex justify-content-between align-items-center flex-wrap gap-4">
+                <div class="fw-bold fs-5">{{ tagline }}</div>
+                {% if contact %}
+                <div class="d-flex gap-4">
+                    {% if contact.email %}<a href="mailto:{{ contact.email }}" class="text-dark font-medium hover:text-black">Email</a>{% endif %}
+                    {% if contact.linkedin %}<a href="{{ contact.linkedin }}" class="text-dark font-medium hover:text-black">LinkedIn</a>{% endif %}
+                    {% if contact.github %}<a href="{{ contact.github }}" class="text-dark font-medium hover:text-black">GitHub</a>{% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </footer>
+
     </div>
 
-    <section id="projects">
-        <h2>Selected Projects</h2>
-        {% for project in projects %}
-        <div class="project-item">
-            <h3>{{ project.name }}</h3>
-            <p class="project-desc">{{ project.description }}</p>
-        </div>
-        {% endfor %}
-    </section>
-
-    <section id="about">
-        <h2>Core Expertise</h2>
-        <div class="skills-list">
-            {% for tech in tech_stack %}
-            <div class="skill-item">{{ tech }}</div>
-            {% endfor %}
-        </div>
-    </section>
-
-    <section id="contact">
-        <h2>Connection</h2>
-        <p>Currently open to new opportunities.</p>
-    </section>
-
-    <footer>
-        &copy; 2026. Made with Protofolio.
-    </footer>
-
-    {% if portfolio_id %}
-    <script>
-        fetch(`/api/portfolio/{{ portfolio_id }}/analytics`, { method: 'POST' });
-    </script>
-    {% endif %}
 </body>
 </html>

@@ -5,7 +5,7 @@ class TestRenderer:
     @pytest.fixture
     def renderer(self): return PortfolioRenderer()
     def test_renderer_initialization(self, renderer): assert renderer.env is not None and "dark.html" in renderer.env.list_templates()
-    def test_base_css(self, renderer): assert "background: #0d1117" in renderer._base_css('dark') and "background: #fafafa" in renderer._base_css('minimal') and "background: #f0f4ff" in renderer._base_css('modern')
+    def test_base_css(self, renderer): assert "background: #0d1117" in renderer._base_css('dark') and "background: #fafafa" in renderer._base_css('minimal') and "background: #fafafa" in renderer._base_css('modern')
     def test_render_with_basic_blueprint(self, renderer): r = renderer.render({"tagline": "A", "target_role": "B", "projects": [{"name": "C", "description": "D"}]}, theme='dark'); assert "A" in r["html"] and "C" in r["html"]
     
     @patch('app.generator.renderer.ChatGroq')

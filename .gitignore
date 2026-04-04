@@ -108,6 +108,7 @@ docker-compose.override.yml
 # MLFlow & Optuna
 # =========================
 ml_experiments/mlruns/
+mlruns/
 ml_experiments/mlflow.db
 
 # =========================
