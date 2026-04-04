@@ -1,0 +1,37 @@
+{
+  "tagline": "Expertise in High-Performance API Development, Database Optimization, and Scalability",
+  "target_role": "Senior Software Engineer",
+  "tech_stack": [
+    "Apache Spark",
+    "Java",
+    "Scala",
+    "RESTful API",
+    "Cassandra",
+    "Apache Kafka",
+    "NGINX",
+    "ZooKeeper",
+    "AWS Glue"
+  ],
+  "projects": [
+    {
+      "name": "Building a Real-Time Streaming API with Apache Kafka and Spark",
+      "description": "Developed a real-time streaming API using Apache Kafka and Spark to process and analyze large datasets. Achieved a latency of 10ms and a throughput of 1000 requests per second."
+    },
+    {
+      "name": "Optimizing Database Performance using Indexing and Query Tuning",
+      "description": "Optimized database performance by creating efficient indexes and tuning queries. Achieved a 50% reduction in query latency and a 20% increase in query throughput."
+    },
+    {
+      "name": "Building a Data Pipeline with Spark and Hadoop",
+      "description": "Built a data pipeline using Spark and Hadoop to process and analyze large datasets. Achieved a data processing rate of 100 GB per hour and a data storage capacity of 1 TB."
+    }
+  ],
+  "layout_strategy": "A clean and modern design with a clear color scheme and typography, using headings, subheadings, and bullet points to make it easy to navigate and understand.",
+  "template_dif": [
+    "Use a 12-column grid system on desktop devices",
+    "Use a 6-column grid system on tablet devices",
+    "Use a single-column layout on mobile devices",
+    "Use Open Sans or Montserrat font for a clean and modern look",
+    "Use a purple accent color #7c3aed throughout the portfolio"
+  ]
+}
