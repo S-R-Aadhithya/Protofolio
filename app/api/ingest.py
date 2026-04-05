@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from ..council.memory import MemoryManager
 from ..council.agents import Chairman
+from ..council.rag_ingestor import RAGIngestor
 from ..models import User, db
 import io
 import json
@@ -53,7 +54,19 @@ def upload_resume():
     mgr = MemoryManager()
     mgr.add_fact(user_id=current_user_email, content=structured_summary)
 
-    return jsonify({"message": "Resume parsed and added to AI memory.", "extracted_text": extracted_text}), 200
+    # --- RAG: chunk raw text + summary into ChromaDB ---
+    rag = RAGIngestor()
+    raw_chunks     = rag.ingest(current_user_email, extracted_text,    "resume")
+    summary_chunks = rag.ingest(current_user_email, structured_summary, "resume_summary")
+    chunk_counts   = rag.get_chunk_counts(current_user_email)
+
+    return jsonify({
+        "message":      "Resume parsed and added to AI memory.",
+        "extracted_text": extracted_text,
+        "rag_ready":    raw_chunks > 0,
+        "chunk_counts": chunk_counts,
+        "chairman_summary": structured_summary,
+    }), 200
 
 
 @ingest_bp.route('/linkedin', methods=['POST'])
@@ -87,14 +100,23 @@ def ingest_linkedin():
     mgr = MemoryManager()
     mgr.add_fact(user_id=current_user_email, content=structured_summary)
 
+    # --- RAG: chunk profile + summary into ChromaDB ---
+    rag = RAGIngestor()
+    rag.ingest(current_user_email, profile_summary,    "linkedin")
+    rag.ingest(current_user_email, structured_summary, "linkedin_summary")
+    chunk_counts = rag.get_chunk_counts(current_user_email)
+
     if user:
         user.linkedin_handle = handle
         db.session.commit()
 
     return jsonify({
-        "message": "LinkedIn profile added to AI memory.",
-        "handle": handle,
-        "summary": profile_summary
+        "message":         "LinkedIn profile added to AI memory.",
+        "handle":          handle,
+        "summary":         profile_summary,
+        "rag_ready":       True,
+        "chunk_counts":    chunk_counts,
+        "chairman_summary": structured_summary,
     }), 200
 
 
@@ -146,9 +168,18 @@ def fetch_github():
         mgr = MemoryManager()
         mgr.add_fact(user_id=current_user_email, content=structured_summary)
 
+        # --- RAG: chunk repo data + summary into ChromaDB ---
+        rag = RAGIngestor()
+        rag.ingest(current_user_email, repo_summary,        "github")
+        rag.ingest(current_user_email, structured_summary,  "github_summary")
+        chunk_counts = rag.get_chunk_counts(current_user_email)
+
         return jsonify({
-            "message": f"Fetched repos for {username} and saved to AI memory.",
-            "repos": top_repos
+            "message":         f"Fetched repos for {username} and saved to AI memory.",
+            "repos":           top_repos,
+            "rag_ready":       True,
+            "chunk_counts":    chunk_counts,
+            "chairman_summary": structured_summary,
         }), 200
 
     except Exception as e:

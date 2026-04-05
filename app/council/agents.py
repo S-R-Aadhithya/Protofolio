@@ -146,6 +146,63 @@ class Chairman(BaseAgent):
     def __init__(self, temperature=0.7, model="llama-3.1-8b-instant"):
         super().__init__("Sophia", "Council Chairman", model=model, temperature=temperature)
 
+    def _build_llm(self, key_index=0):
+        """Try fine-tuned Ollama model first; fall back to base Groq/Gemini."""
+        ollama_model = os.getenv("OLLAMA_MODEL")
+        ollama_host  = os.getenv("OLLAMA_HOST", "http://localhost:11434")
+        if ollama_model:
+            try:
+                from langchain_ollama import ChatOllama
+                self.llm = ChatOllama(
+                    model=ollama_model,
+                    base_url=ollama_host,
+                    temperature=self._temperature,
+                    num_predict=1500,
+                )
+                self._using_ollama = True
+                print(f"INFO: Chairman ✓ using fine-tuned Ollama model: {ollama_model}")
+                return
+            except Exception as e:
+                print(f"WARNING: Ollama unavailable ({e}) — falling back to base model.")
+        self._using_ollama = False
+        super()._build_llm(key_index)
+
+    # ── SME System Prompt — MUST MATCH finetune/generate_training_data.py ────
+    _SME_SYSTEM_PROMPT = (
+        "You are Sophia, the unified Council Chairman and Subject Matter Expert (SME).\n"
+        "You simultaneously embody the perspectives of:\n"
+        "  - Tech Lead   (technical stack, architecture, code quality)\n"
+        "  - UI/UX Designer (visual aesthetics, layout, user experience)\n"
+        "  - Product Manager (market positioning, impact framing, audience clarity)\n"
+        "  - Council Approver (holistic assessment and final decision)\n\n"
+        "Given a candidate's career goal and RAG-indexed professional data, produce a\n"
+        "SINGLE valid JSON object. No markdown. No explanation. Only raw JSON.\n\n"
+        "CRITICAL RULES:\n"
+        "- Extract tech_stack ONLY from context. NEVER invent tools.\n"
+        "- Extract work_experience ONLY from context. NEVER invent company names.\n"
+        "- Extract projects ONLY from context. NEVER invent project names.\n"
+        "- If a field cannot be populated from context, return [] for lists.\n\n"
+        'Required JSON schema:\n'
+        '{\n'
+        '  \"tagline\": \"<specific 1-sentence headline for THIS person>\",\n'
+        '  \"target_role\": \"<professional title>\",\n'
+        '  \"tech_stack\": [\"<tool>\", \"...up to 10\"],\n'
+        '  \"work_experience\": [{\"company\": \"...\", \"role\": \"...\", \"description\": \"1-2 sentences\"}],\n'
+        '  \"projects\": [{\"name\": \"...\", \"description\": \"1-2 sentences\"}],\n'
+        '  \"layout_strategy\": \"<2-3 sentence layout and design philosophy>\",\n'
+        '  \"template_dif\": [\"<CSS/HTML tweak>\", \"...3-5 items\"],\n'
+        '  \"approval_verdict\": {\n'
+        '    \"approved\": true,\n'
+        '    \"confidence_score\": 0.9,\n'
+        '    \"council_decision\": \"APPROVED\",\n'
+        '    \"tech_notes\": \"<tech lead 1-2 sentences>\",\n'
+        '    \"design_notes\": \"<designer 1-2 sentences>\",\n'
+        '    \"market_notes\": \"<PM 1-2 sentences>\",\n'
+        '    \"key_strengths\": [\"<strength>\"],\n'
+        '    \"gaps_to_address\": [\"<gap>\"]}\n'
+        '}'
+    )
+
     @mlflow.trace
     def synthesize(self, user_input, deliberations, context=""):
         """Stage 3: Final synthesis into a concrete JSON blueprint."""
@@ -199,6 +256,58 @@ Do NOT use placeholder names. Use real, domain-specific project and company name
 
         result = self._invoke_with_rotation(messages, mock_synthesis)
         return result.content
+
+    @mlflow.trace
+    def sme_synthesize(self, user_input: str, rag_context: str) -> str:
+        """
+        RAG-mode: single LLM call replacing the 7-call deliberation pipeline.
+        Returns raw JSON string containing blueprint + approval_verdict.
+        """
+        prompt = ChatPromptTemplate.from_messages([
+            ("system", self._SME_SYSTEM_PROMPT),
+            ("human",  "Career Goal: {user_input}\n\nRAG Context:\n{context}\n\nOutput ONLY the JSON object."),
+        ])
+        messages = prompt.format_messages(user_input=user_input, context=rag_context)
+        result = self._invoke_with_rotation(
+            messages,
+            lambda: type('R', (), {'content': self._mock_sme_synthesis(user_input)})()
+        )
+        return result.content
+
+    def _mock_sme_synthesis(self, user_input: str) -> str:
+        """Deterministic mock for CI / no-API environments."""
+        goal = user_input.lower()
+        if any(k in goal for k in ["ml", "machine", "ai", "data science"]):
+            stack = ["Python", "PyTorch", "Scikit-Learn", "MLflow", "Hugging Face", "Docker"]
+            tagline = "Building Intelligent Systems at the Intersection of Data and Engineering"
+        elif any(k in goal for k in ["front", "ui", "ux", "design"]):
+            stack = ["React", "TypeScript", "Next.js", "Tailwind CSS", "Framer Motion"]
+            tagline = "Crafting Pixel-Perfect Interfaces with Purposeful Interaction Design"
+        elif any(k in goal for k in ["back", "api", "server"]):
+            stack = ["Python", "FastAPI", "PostgreSQL", "Redis", "Docker", "AWS"]
+            tagline = "Architecting Reliable Backends That Scale with Confidence"
+        elif any(k in goal for k in ["devops", "sre", "cloud"]):
+            stack = ["Kubernetes", "Terraform", "Docker", "Prometheus", "AWS", "GitHub Actions"]
+            tagline = "Engineering the Infrastructure That Powers Modern Software at Scale"
+        else:
+            stack = ["Next.js", "TypeScript", "PostgreSQL", "Node.js", "Docker"]
+            tagline = "Full-Stack Engineer Delivering End-to-End Product Excellence"
+        blueprint = {
+            "tagline": tagline, "target_role": user_input, "tech_stack": stack,
+            "work_experience": [], "projects": [],
+            "layout_strategy": "Clean single-page portfolio with hero, skills grid, and project cards. Mobile-first responsive layout.",
+            "template_dif": ["Gradient accent #6d28d9 → #3b82f6", "Inter font family", "Subtle card shadows", "Thin gradient dividers"],
+            "approval_verdict": {
+                "approved": True, "confidence_score": 0.82,
+                "council_decision": "APPROVED",
+                "tech_notes": "[MOCK] Technical stack aligns well with target role requirements.",
+                "design_notes": "[MOCK] Recommend dark theme with gradient accents for a modern feel.",
+                "market_notes": "[MOCK] Target role positioning is competitive in the current market.",
+                "key_strengths": ["Technical foundation", "Consistent project portfolio"],
+                "gaps_to_address": ["Add quantifiable metrics", "Include open-source contributions"],
+            },
+        }
+        return json.dumps(blueprint)
 
     @mlflow.trace
     def process_ingestion(self, content, source_type="resume"):

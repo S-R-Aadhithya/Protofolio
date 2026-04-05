@@ -1,0 +1,35 @@
+# Fine-tuning environment — Works on CUDA (NVIDIA) and MPS (Apple Silicon)
+# Usage:
+#   For NVIDIA: pip install -r finetune/requirements_finetune.txt
+#   For Mac:    Remove unsloth and xformers lines, then install.
+
+# ── Core Fine-tuning (Hardware Agnostic) ───────────────────────────
+transformers>=4.44.0
+peft>=0.12.0
+trl>=0.10.0
+accelerate>=0.33.0
+datasets>=2.21.0
+bitsandbytes>=0.43.3  # Now has limited support for MPS, essential for CUDA
+
+# ── NVIDIA Acceleration (Remove if on Mac) ───────────────────────
+unsloth @ git+https://github.com/unslothai/unsloth.git
+xformers
+
+# ── Evaluation & utilities ──────────────────────────────────────────
+rouge-score
+nltk
+mlflow>=2.15.0
+pandas
+python-dotenv  # For loading GOOGLE_API_KEY from .env
+
+# ── HuggingFace Hub ────────────────────────────────────────────────
+huggingface_hub>=0.24.0
+
+# ── Synthetic Data Generation (Gemini) ────────────────────────────
+google-generativeai>=0.8.0
+langchain-google-genai>=2.0.0
+langchain>=0.2.0
+langchain-core>=0.2.0
+
+# ── Local Deployment (Ollama) ──────────────────────────────────────
+# llama-cpp-python  # Required for GGUF export

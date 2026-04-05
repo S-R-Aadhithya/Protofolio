@@ -20,21 +20,25 @@ def generate():
     if not user:
         return jsonify({"msg": "User not found"}), 404
 
-    data = request.get_json() or {}
-    job_goal = data.get('job_goal', None)  # None = auto-infer from resume
-    theme = data.get('theme', 'dark')
+    data     = request.get_json() or {}
+    job_goal = data.get('job_goal', None)
+    theme    = data.get('theme', 'dark')
+    mode     = data.get('mode', 'rag')   # 'rag' (default) or 'classic'
 
-    result = engine.deliberate(user_email, job_goal)
-    blueprint = result['blueprint']
-    # Use the inferred/provided goal for DB storage
+    if mode == 'rag':
+        result = engine.deliberate_rag(user_email, job_goal)
+    else:
+        result = engine.deliberate(user_email, job_goal)
+
+    blueprint     = result['blueprint']
     effective_goal = result.get('inferred_goal', job_goal) or 'Auto-Generated Portfolio'
     blueprint['theme'] = theme
 
     new_portfolio = Portfolio(
         user_id=user.id,
-        title=blueprint.get('tagline', f"Professional {job_goal} Portfolio"),
-        target_role=job_goal,
-        blueprint_json=json.dumps(blueprint)  # Save full blueprint for preview/export
+        title=blueprint.get('tagline', f"Professional {effective_goal} Portfolio"),
+        target_role=effective_goal,
+        blueprint_json=json.dumps(blueprint)
     )
     db.session.add(new_portfolio)
     db.session.flush()
@@ -53,10 +57,13 @@ def generate():
     db.session.commit()
 
     return jsonify({
-        "status": "success",
-        "portfolio_id": new_portfolio.id,
-        "deliberation": result['deliberation'],
-        "blueprint": blueprint
+        "status":          "success",
+        "portfolio_id":    new_portfolio.id,
+        "deliberation":    result.get('deliberation', ''),
+        "blueprint":       blueprint,
+        "rag_mode":        result.get('rag_mode', False),
+        "finetune_active": result.get('finetune_active', False),
+        "chunk_counts":    result.get('chunk_counts', {}),
     }), 200
 
 @portfolio_bp.route('/generate/stream', methods=['POST'])
@@ -67,19 +74,33 @@ def generate_stream():
     if not user:
         return jsonify({"msg": "User not found"}), 404
 
-    data = request.get_json() or {}
+    data     = request.get_json() or {}
     job_goal = data.get('job_goal', 'Software Engineer')
-    theme = data.get('theme', 'dark')
+    theme    = data.get('theme', 'dark')
+    mode     = data.get('mode', 'rag')   # 'rag' (default) or 'classic'
 
     def event_stream():
-        final_blueprint = None
-        for chunk in engine.deliberate_stream(user_email, job_goal):
+        final_blueprint  = None
+        rag_mode_active  = False
+        finetune_active  = False
+        chunk_counts_ref = {}
+
+        stream_fn = (
+            engine.deliberate_rag_stream
+            if mode == 'rag'
+            else engine.deliberate_stream
+        )
+
+        for chunk in stream_fn(user_email, job_goal):
             yield chunk
             if chunk.startswith("data: ") and "complete" in chunk:
                 try:
                     payload = json.loads(chunk[len("data: "):])
                     if payload.get("type") == "complete":
-                        final_blueprint = payload.get("blueprint")
+                        final_blueprint  = payload.get("blueprint")
+                        rag_mode_active  = payload.get("rag_mode", False)
+                        finetune_active  = payload.get("finetune_active", False)
+                        chunk_counts_ref = payload.get("chunk_counts", {})
                 except Exception:
                     pass
 
@@ -105,8 +126,8 @@ def generate_stream():
                         description=p_desc
                     ))
             db.session.commit()
-            
-            yield f"data: {json.dumps({'type': 'save_complete', 'portfolio_id': new_portfolio.id})}\n\n"
+
+            yield f"data: {json.dumps({'type': 'save_complete', 'portfolio_id': new_portfolio.id, 'rag_mode': rag_mode_active, 'finetune_active': finetune_active, 'chunk_counts': chunk_counts_ref})}\n\n"
 
     return Response(stream_with_context(event_stream()), mimetype='text/event-stream')
 

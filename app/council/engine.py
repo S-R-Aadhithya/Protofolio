@@ -294,3 +294,171 @@ class CouncilEngine:
             })
 
         yield f"data: {json.dumps({'type': 'complete', 'blueprint': blueprint})}\n\n"
+
+    # ────────────────────────────────────────────────────────────── #
+    #  RAG MODE — 2 LLM calls instead of 7 (≈70-80% token savings)  #
+    # ────────────────────────────────────────────────────────────── #
+
+    def deliberate_rag(self, user_id, user_input=None, agent_config=None):
+        """Token-efficient RAG deliberation: retrieve → Chairman SME → blueprint+verdict."""
+        from .rag_ingestor import RAGIngestor
+
+        if not user_input:
+            user_input = self._infer_goal(user_id)
+
+        if agent_config:
+            self.chairman.update_config(
+                temperature=agent_config.get("temperature"),
+                model=agent_config.get("model")
+            )
+
+        if current_app:
+            mlflow.set_tracking_uri(current_app.config.get('MLFLOW_TRACKING_URI', 'file:./mlruns'))
+            mlflow.set_experiment(current_app.config.get('MLFLOW_EXPERIMENT_NAME', 'Protofolio_Generation'))
+        else:
+            mlflow.set_tracking_uri('file:./mlruns')
+            mlflow.set_experiment('Protofolio_Generation')
+        mlflow.langchain.autolog()
+
+        with mlflow.start_run(run_name=f"RAG_{user_id}"):
+            start_time = time.time()
+
+            rag = RAGIngestor()
+            context      = rag.retrieve(user_id, user_input, top_k=8)
+            chunk_counts = rag.get_chunk_counts(user_id)
+            total_chunks = sum(chunk_counts.values())
+
+            if total_chunks == 0:
+                print("DEBUG: No RAG chunks — falling back to Mem0.")
+                context = self.memory.retrieve_chunks(user_id, user_input)
+
+            mlflow.log_params({
+                "mode": "rag",
+                "user_input_length": len(user_input),
+                "context_length": len(context),
+                "rag_chunks_total": total_chunks,
+                "chairman_model": self.chairman._model,
+                "using_ollama": getattr(self.chairman, "_using_ollama", False),
+            })
+
+            with get_openai_callback() as cb:
+                result_str = self.chairman.sme_synthesize(user_input, context)
+
+            latency = time.time() - start_time
+
+            try:
+                json_str = result_str
+                if "```json" in json_str:
+                    json_str = json_str.split("```json")[1].split("```")[0]
+                elif "```" in json_str:
+                    json_str = json_str.split("```")[1].split("```")[0]
+                blueprint = json.loads(json_str.strip())
+            except Exception:
+                blueprint = {"error": "Failed to parse RAG synthesis", "raw": result_str}
+
+            quality_score = self._calculate_quality_score(blueprint)
+
+            try:
+                renderer = PortfolioRenderer()
+                render_result = renderer.render(blueprint)
+                html_output = render_result["html"] if isinstance(render_result, dict) else str(render_result)
+            except Exception as e:
+                html_output = f"<h1>Render failed</h1><p>{e}</p>"
+
+            mlflow.log_metrics({
+                "latency_seconds": latency,
+                "total_tokens": cb.total_tokens,
+                "prompt_tokens": cb.prompt_tokens,
+                "completion_tokens": cb.completion_tokens,
+                "quality_score": quality_score,
+                "rag_chunks": total_chunks,
+            })
+
+            with tempfile.TemporaryDirectory() as tmpdir:
+                bp_path = os.path.join(tmpdir, "blueprint.json")
+                with open(bp_path, "w", encoding="utf-8") as f:
+                    json.dump(blueprint, f, indent=2)
+                html_path = os.path.join(tmpdir, "portfolio.html")
+                with open(html_path, "w", encoding="utf-8") as f:
+                    f.write(html_output)
+                mlflow.log_artifacts(tmpdir)
+
+        return {
+            "blueprint":       blueprint,
+            "inferred_goal":   user_input,
+            "rag_mode":        True,
+            "chunk_counts":    chunk_counts,
+            "finetune_active": getattr(self.chairman, "_using_ollama", False),
+        }
+
+    def deliberate_rag_stream(self, user_id, user_input, agent_config=None):
+        """SSE generator for RAG mode — emits per-step status then complete."""
+        from .rag_ingestor import RAGIngestor
+
+        yield f"data: {json.dumps({'type': 'status', 'agent': 'System', 'message': '⚡ RAG Mode — single-call synthesis...'})}\n\n"
+
+        if current_app:
+            mlflow.set_tracking_uri(current_app.config.get('MLFLOW_TRACKING_URI', 'file:./mlruns'))
+            mlflow.set_experiment(current_app.config.get('MLFLOW_EXPERIMENT_NAME', 'Protofolio_Generation'))
+        else:
+            mlflow.set_tracking_uri('file:./mlruns')
+            mlflow.set_experiment('Protofolio_Generation')
+        mlflow.langchain.autolog()
+
+        with mlflow.start_run(run_name=f"RAGStream_{user_id}"):
+            start_time = time.time()
+
+            yield f"data: {json.dumps({'type': 'status', 'agent': 'RAG', 'message': 'Querying ChromaDB vector store...'})}\n\n"
+
+            rag          = RAGIngestor()
+            context      = rag.retrieve(user_id, user_input, top_k=8)
+            chunk_counts = rag.get_chunk_counts(user_id)
+            total_chunks = sum(chunk_counts.values())
+
+            if total_chunks == 0:
+                yield f"data: {json.dumps({'type': 'status', 'agent': 'RAG', 'message': 'No indexed data — using Mem0 fallback...'})}\n\n"
+                context = self.memory.retrieve_chunks(user_id, user_input)
+            else:
+                msg = (f"Retrieved {total_chunks} chunks "
+                       f"(Resume: {chunk_counts.get('resume',0)}, "
+                       f"LinkedIn: {chunk_counts.get('linkedin',0)}, "
+                       f"GitHub: {chunk_counts.get('github',0)})")
+                yield f"data: {json.dumps({'type': 'rag_chunks', 'chunk_counts': chunk_counts, 'total': total_chunks})}\n\n"
+                yield f"data: {json.dumps({'type': 'status', 'agent': 'RAG', 'message': msg})}\n\n"
+
+            if agent_config:
+                self.chairman.update_config(
+                    temperature=agent_config.get("temperature"),
+                    model=agent_config.get("model")
+                )
+
+            model_label = (
+                os.getenv("OLLAMA_MODEL", "Fine-Tuned")
+                if getattr(self.chairman, "_using_ollama", False)
+                else "Groq Llama-3.1-8B"
+            )
+            yield f"data: {json.dumps({'type': 'status', 'agent': 'Chairman SME', 'message': f'Synthesizing via {model_label}...'})}\n\n"
+
+            with get_openai_callback() as cb:
+                result_str = self.chairman.sme_synthesize(user_input, context)
+
+            try:
+                json_str = result_str
+                if "```json" in json_str:
+                    json_str = json_str.split("```json")[1].split("```")[0]
+                elif "```" in json_str:
+                    json_str = json_str.split("```")[1].split("```")[0]
+                blueprint = json.loads(json_str.strip())
+            except Exception:
+                blueprint = {"error": "Failed to parse RAG synthesis"}
+
+            latency       = time.time() - start_time
+            quality_score = self._calculate_quality_score(blueprint)
+            mlflow.log_metrics({
+                "latency_seconds": latency,
+                "total_tokens": cb.total_tokens,
+                "quality_score": quality_score,
+                "rag_chunks": total_chunks,
+            })
+
+        yield f"data: {json.dumps({'type': 'complete', 'blueprint': blueprint, 'rag_mode': True, 'chunk_counts': chunk_counts, 'finetune_active': getattr(self.chairman, '_using_ollama', False)})}\n\n"
